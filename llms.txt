@@ -1,0 +1,26 @@
+# @vllnt/convex-reactions
+
+> Reactions, votes, and likes on any resource — toggle, count by kind, and list reactors as a Convex component
+
+`@vllnt/convex-reactions` is a publishable Convex component. It targets `convex@^1.41.0`.
+It stores one sandboxed table - `reactions` (a reaction edge `{ authorRef, resourceRef, kind, createdAt }`: an opaque host subject reacted to an opaque host resource with one reaction `kind` - an emoji, `up`/`down`, `like`). A host mutation calls `react(authorRef, resourceRef, kind)` to toggle the edge (insert if absent, delete if present) in one transaction and gets back `{ reacted, action }`; `unreact(authorRef, resourceRef, kind)` removes it idempotently. One edge per subject per kind per resource is enforced inside the mutation transaction, so toggles and counts stay correct under concurrency. Queries: `counts(resourceRef)` tallies edges per kind, `reactors(resourceRef, kind, paginationOpts)` pages who reacted oldest-first (standard Convex pagination), `hasReacted` and `myReactions` expose a subject's own state. `createdAt` is read from the server clock inside the handler - no caller-supplied clock. The reaction vocabulary is configurable: `new Reactions(component, { allowedKinds })` rejects an unknown kind at the client boundary. The host owns the subject, the resource, the vocabulary, and auth (opaque refs - the component never de-references them or reads host tables); the component owns only the reaction edges. Mount-safe: it runs correctly under multiple named `app.use` mounts.
+
+## Docs
+
+- [README](README.md): Project overview, installation, usage examples, architecture
+- [API Reference](docs/API.md): Public class methods, return shapes, error model
+- [Changelog](CHANGELOG.md): Version history and release notes
+- [Contributing](CONTRIBUTING.md): Development setup, validation commands, release workflow
+
+## Examples
+
+- [Example component wrapper](example/convex/example.ts): Host-app wrapper functions
+- [Example tests](example/convex/example.test.ts): End-to-end usage coverage with `convex-test`
+
+## Optional
+
+- [AGENTS](AGENTS.md): Canonical agent instructions for this repository
+- [Security Policy](SECURITY.md): Vulnerability reporting policy
+- [Code of Conduct](CODE_OF_CONDUCT.md): Community participation guidelines
+- [License](LICENSE): MIT license
+- [Full source bundle](llms-full.txt): Aggregated README, changelog, API docs, and key source files
