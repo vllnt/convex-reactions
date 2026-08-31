@@ -13,7 +13,12 @@ Convex agent skills for common tasks can be installed by running `npx convex ai-
 Reactions, votes, and likes on any resource, as a Convex component. A reaction is the opaque edge
 `(authorRef, resourceRef, kind)`; `react` toggles it (add if absent, remove if present), `counts`
 tallies a resource per kind, `reactors` pages who reacted. It follows the vllnt Component Standard
-(see the `convex-components` hub `.claude/rules/component-standard.md`).
+(see the `oss-packages` hub `AGENTS.md`).
+
+## Agent instructions
+
+`AGENTS.md` is the sole agent-instruction source for this repository. Do not add
+`CLAUDE.md` or `.claude` content.
 
 ## Architecture
 
@@ -109,3 +114,9 @@ second instance (`app.use(component, { name })`) for a static partition (e.g. em
 | Any change | `pnpm generate:llms` to keep `llms-full.txt` current |
 
 Grep old values before committing (e.g. after a `peerDependencies.convex` bump, `git grep "1.41.0"` → only the new range survives).
+
+## Generated code
+
+- Every `**/_generated/**` file is owned exclusively by Convex CLI codegen.
+- Never create, edit, lint, or format generated files manually.
+- Run `pnpm codegen` to regenerate them and commit the generated output unchanged.
