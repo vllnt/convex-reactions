@@ -33,7 +33,7 @@ export const react = mutation({
       .unique();
 
     if (existing !== null) {
-      await ctx.db.delete(existing._id);
+      await ctx.db.delete("reactions", existing._id);
       return { reacted: false, action: "removed" as const };
     }
 
@@ -73,7 +73,7 @@ export const unreact = mutation({
     if (existing === null) {
       return false;
     }
-    await ctx.db.delete(existing._id);
+    await ctx.db.delete("reactions", existing._id);
     return true;
   },
 });
