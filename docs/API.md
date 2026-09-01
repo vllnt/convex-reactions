@@ -1,6 +1,6 @@
 # API Reference — @vllnt/convex-reactions
 
-**Compatibility:** `convex@^1.41.0`
+**Compatibility:** `convex@^1.45.0`
 
 Construct the client with the mounted component and optional config:
 
@@ -63,14 +63,19 @@ not reacted to the resource.
 ### `reactors(ctx, resourceRef, kind, paginationOpts) → PaginationResult<ReactionView>`
 
 Page the subjects who reacted to `resourceRef` with one `kind`, oldest first via
-the `by_resource_kind` index. Takes the standard Convex `paginationOpts` and
-returns the standard paginated envelope (`page`, `isDone`, `continueCursor`).
-`ReactionView` is `{ authorRef, resourceRef, kind, createdAt }`.
+the `by_resource_kind` index. Takes the standard Convex `paginationOpts`; its
+`numItems` must be an integer from 1 through 1000. `maximumRowsRead`, when
+provided, must be a positive finite integer and is capped at 1000 so explicit
+reactive cursor ranges remain bounded. Returns the standard paginated envelope
+(`page`, `isDone`, `continueCursor`). `ReactionView` is
+`{ authorRef, resourceRef, kind, createdAt }`.
 
 ## Error codes
 
-The component throws no coded `ConvexError`s — `react`/`unreact` are total over
-valid string args (toggle and idempotent remove never reject on state). The only
-boundary rejection is a client-side `Error("invalid reaction kind ... not in the
-configured allowlist")` thrown by the `Reactions` client when `allowedKinds` is
-set and `kind` is not in it — raised before the component is called.
+`reactors` throws `INVALID_PAGE_SIZE` when `paginationOpts.numItems` is outside
+1 through 1000 or when `numItems`/`maximumRowsRead` is not a valid finite
+integer. `react`/`unreact` are total over valid
+string args (toggle and idempotent remove never reject on state). The client-side
+`Error("invalid reaction kind ... not in the configured allowlist")` is thrown by
+the `Reactions` client when `allowedKinds` is set and `kind` is not in it — raised
+before the component is called.

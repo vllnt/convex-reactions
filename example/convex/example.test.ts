@@ -227,6 +227,80 @@ describe("reactions — reactors (paginated)", () => {
     expect(r.page).toEqual([]);
     expect(r.isDone).toBe(true);
   });
+
+  test.each([0, 1001, 1.5, Number.POSITIVE_INFINITY])(
+    "rejects an invalid bounded page size (%s)",
+    async (numItems) => {
+      const t = setup();
+      await expect(
+        t.query(api.example.reactors, {
+          resourceRef: "post1",
+          kind: "up",
+          paginationOpts: { cursor: null, numItems },
+        }),
+      ).rejects.toMatchObject({ data: { code: "INVALID_PAGE_SIZE" } });
+    },
+  );
+
+  test.each([0, 1.5, Number.POSITIVE_INFINITY])(
+    "rejects an invalid maximumRowsRead (%s)",
+    async (maximumRowsRead) => {
+      const t = setup();
+      await expect(
+        t.query(api.example.reactors, {
+          resourceRef: "post1",
+          kind: "up",
+          paginationOpts: {
+            cursor: null,
+            numItems: 1,
+            maximumRowsRead,
+          },
+        }),
+      ).rejects.toMatchObject({ data: { code: "INVALID_PAGE_SIZE" } });
+    },
+  );
+
+  test("accepts the maximum page size", async () => {
+    const t = setup();
+    const result = await t.query(api.example.reactors, {
+      resourceRef: "post1",
+      kind: "up",
+      paginationOpts: { cursor: null, numItems: 1000 },
+    });
+    expect(result.page).toEqual([]);
+  });
+
+  test("caps an explicit reactive cursor range at 1000 rows", async () => {
+    const t = setup();
+    for (let i = 0; i < 1001; i++) {
+      await t.mutation(api.example.react, {
+        authorRef: `bounded-${i}`,
+        resourceRef: "bounded-post",
+        kind: "up",
+      });
+    }
+    const first = await t.query(api.example.reactors, {
+      resourceRef: "bounded-post",
+      kind: "up",
+      paginationOpts: { cursor: null, numItems: 1000 },
+    });
+    const tail = await t.query(api.example.reactors, {
+      resourceRef: "bounded-post",
+      kind: "up",
+      paginationOpts: { cursor: first.continueCursor, numItems: 1 },
+    });
+    const bounded = await t.query(api.example.reactors, {
+      resourceRef: "bounded-post",
+      kind: "up",
+      paginationOpts: {
+        cursor: null,
+        endCursor: tail.continueCursor,
+        numItems: 1,
+        maximumRowsRead: 5000,
+      },
+    });
+    expect(bounded.page).toHaveLength(1000);
+  });
 });
 
 describe("reactions — myReactions", () => {

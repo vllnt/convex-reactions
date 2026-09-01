@@ -25,7 +25,7 @@ correct under concurrency.
 - **Toggle** — `react(authorRef, resourceRef, kind)` adds the edge if absent and removes it if present in one transaction, returning `{ reacted, action }`.
 - **Idempotent remove** — `unreact(authorRef, resourceRef, kind)` deletes the edge; removing an absent one is a safe no-op (`false`).
 - **Count by kind** — `counts(resourceRef)` returns `[{ kind, count }, ...]` sorted by kind; no reactions returns `[]`.
-- **List reactors** — `reactors(resourceRef, kind, paginationOpts)` pages who reacted with one kind, oldest first. Reactive in a Convex query.
+- **List reactors** — `reactors(resourceRef, kind, paginationOpts)` pages who reacted with one kind, oldest first. `numItems` must be an integer from 1 through 1000 and `maximumRowsRead` is capped at 1000, including reactive cursor ranges.
 - **Per-subject state** — `hasReacted` and `myReactions` give the host the subject's own reaction state for rendering controls.
 - **Configurable vocabulary** — `allowedKinds` pins the reaction set (`["up", "down"]`, a fixed emoji list); an unknown kind is rejected at the boundary. Omit for freeform.
 - **Server-sourced time** — `createdAt` is stamped from the server clock; a caller can't supply a timestamp.
@@ -37,7 +37,7 @@ correct under concurrency.
 pnpm add @vllnt/convex-reactions
 ```
 
-Peer dependency: `convex@^1.41.0`.
+Peer dependency: `convex@^1.45.0`.
 
 ## Usage
 
@@ -86,7 +86,9 @@ export const tally = query({
 | `counts(ctx, resourceRef)` | query | `{ kind, count }[]` (sorted by kind) |
 | `hasReacted(ctx, authorRef, resourceRef, kind)` | query | `boolean` |
 | `myReactions(ctx, authorRef, resourceRef)` | query | `string[]` (kinds the subject placed) |
-| `reactors(ctx, resourceRef, kind, paginationOpts)` | query | `PaginationResult<ReactionView>` |
+| `reactors(ctx, resourceRef, kind, paginationOpts)` | query | `PaginationResult<ReactionView>`; bounded to 1000 rows read |
+
+Invalid numeric pagination options throw `INVALID_PAGE_SIZE`.
 
 Full reference: [docs/API.md](docs/API.md).
 

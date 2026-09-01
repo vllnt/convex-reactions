@@ -1,8 +1,43 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
+import type { PaginationOptions } from "convex/server";
 import { query } from "./_generated/server";
 import { kindCount, reactionView } from "./validators";
 import type { Doc } from "./_generated/dataModel";
+
+const MAX_PAGE_SIZE = 1000;
+
+function boundedPaginationOptions(
+  paginationOpts: PaginationOptions,
+): PaginationOptions {
+  const { numItems, maximumRowsRead } = paginationOpts;
+  if (
+    !Number.isFinite(numItems) ||
+    !Number.isInteger(numItems) ||
+    numItems < 1 ||
+    numItems > MAX_PAGE_SIZE
+  ) {
+    throw new ConvexError({
+      code: "INVALID_PAGE_SIZE",
+      message: `paginationOpts.numItems must be an integer between 1 and ${MAX_PAGE_SIZE}`,
+    });
+  }
+  if (
+    maximumRowsRead !== undefined &&
+    (!Number.isFinite(maximumRowsRead) ||
+      !Number.isInteger(maximumRowsRead) ||
+      maximumRowsRead < 1)
+  ) {
+    throw new ConvexError({
+      code: "INVALID_PAGE_SIZE",
+      message: "paginationOpts.maximumRowsRead must be a positive finite integer",
+    });
+  }
+  return {
+    ...paginationOpts,
+    maximumRowsRead: Math.min(maximumRowsRead ?? MAX_PAGE_SIZE, MAX_PAGE_SIZE),
+  };
+}
 
 /** Project a stored reaction row to its public view (drops internal fields). */
 function view(row: Doc<"reactions">) {
@@ -112,13 +147,14 @@ export const reactors = query({
     ),
   }),
   handler: async (ctx, args) => {
+    const paginationOpts = boundedPaginationOptions(args.paginationOpts);
     const result = await ctx.db
       .query("reactions")
       .withIndex("by_resource_kind", (q) =>
         q.eq("resourceRef", args.resourceRef).eq("kind", args.kind),
       )
       .order("asc")
-      .paginate(args.paginationOpts);
+      .paginate(paginationOpts);
     return { ...result, page: result.page.map(view) };
   },
 });

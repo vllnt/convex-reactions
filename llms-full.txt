@@ -33,7 +33,7 @@ correct under concurrency.
 - **Toggle** — `react(authorRef, resourceRef, kind)` adds the edge if absent and removes it if present in one transaction, returning `{ reacted, action }`.
 - **Idempotent remove** — `unreact(authorRef, resourceRef, kind)` deletes the edge; removing an absent one is a safe no-op (`false`).
 - **Count by kind** — `counts(resourceRef)` returns `[{ kind, count }, ...]` sorted by kind; no reactions returns `[]`.
-- **List reactors** — `reactors(resourceRef, kind, paginationOpts)` pages who reacted with one kind, oldest first. Reactive in a Convex query.
+- **List reactors** — `reactors(resourceRef, kind, paginationOpts)` pages who reacted with one kind, oldest first. `numItems` must be an integer from 1 through 1000 and `maximumRowsRead` is capped at 1000, including reactive cursor ranges.
 - **Per-subject state** — `hasReacted` and `myReactions` give the host the subject's own reaction state for rendering controls.
 - **Configurable vocabulary** — `allowedKinds` pins the reaction set (`["up", "down"]`, a fixed emoji list); an unknown kind is rejected at the boundary. Omit for freeform.
 - **Server-sourced time** — `createdAt` is stamped from the server clock; a caller can't supply a timestamp.
@@ -45,7 +45,7 @@ correct under concurrency.
 pnpm add @vllnt/convex-reactions
 ```
 
-Peer dependency: `convex@^1.41.0`.
+Peer dependency: `convex@^1.45.0`.
 
 ## Usage
 
@@ -94,7 +94,9 @@ export const tally = query({
 | `counts(ctx, resourceRef)` | query | `{ kind, count }[]` (sorted by kind) |
 | `hasReacted(ctx, authorRef, resourceRef, kind)` | query | `boolean` |
 | `myReactions(ctx, authorRef, resourceRef)` | query | `string[]` (kinds the subject placed) |
-| `reactors(ctx, resourceRef, kind, paginationOpts)` | query | `PaginationResult<ReactionView>` |
+| `reactors(ctx, resourceRef, kind, paginationOpts)` | query | `PaginationResult<ReactionView>`; bounded to 1000 rows read |
+
+Invalid numeric pagination options throw `INVALID_PAGE_SIZE`.
 
 Full reference: [docs/API.md](docs/API.md).
 
@@ -148,6 +150,21 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- Treat Convex `_generated` output as CLI-owned, exclude it from formatting, and expose a
+  dedicated codegen script.
+- Refresh all direct dependencies to their latest compatible releases for canary validation.
+- Require `convex@^1.45.0` and update `convex-test` to `^0.0.56`.
+- Bound reactor pagination to integer page sizes from 1 through 1000 and cap
+  `maximumRowsRead` at 1000 for reactive cursor ranges.
+
+### Breaking
+
+- `reactors` now throws `INVALID_PAGE_SIZE` for invalid numeric pagination
+  options. Use integer `numItems` values from 1 through 1000; larger
+  `maximumRowsRead` values are safely capped.
+
 ## [0.1.0] - 2026-06-14
 
 ### Added
@@ -180,7 +197,7 @@ All notable changes to this project are documented here. The format is based on
 
 # API Reference — @vllnt/convex-reactions
 
-**Compatibility:** `convex@^1.41.0`
+**Compatibility:** `convex@^1.45.0`
 
 Construct the client with the mounted component and optional config:
 
@@ -243,17 +260,22 @@ not reacted to the resource.
 ### `reactors(ctx, resourceRef, kind, paginationOpts) → PaginationResult<ReactionView>`
 
 Page the subjects who reacted to `resourceRef` with one `kind`, oldest first via
-the `by_resource_kind` index. Takes the standard Convex `paginationOpts` and
-returns the standard paginated envelope (`page`, `isDone`, `continueCursor`).
-`ReactionView` is `{ authorRef, resourceRef, kind, createdAt }`.
+the `by_resource_kind` index. Takes the standard Convex `paginationOpts`; its
+`numItems` must be an integer from 1 through 1000. `maximumRowsRead`, when
+provided, must be a positive finite integer and is capped at 1000 so explicit
+reactive cursor ranges remain bounded. Returns the standard paginated envelope
+(`page`, `isDone`, `continueCursor`). `ReactionView` is
+`{ authorRef, resourceRef, kind, createdAt }`.
 
 ## Error codes
 
-The component throws no coded `ConvexError`s — `react`/`unreact` are total over
-valid string args (toggle and idempotent remove never reject on state). The only
-boundary rejection is a client-side `Error("invalid reaction kind ... not in the
-configured allowlist")` thrown by the `Reactions` client when `allowedKinds` is
-set and `kind` is not in it — raised before the component is called.
+`reactors` throws `INVALID_PAGE_SIZE` when `paginationOpts.numItems` is outside
+1 through 1000 or when `numItems`/`maximumRowsRead` is not a valid finite
+integer. `react`/`unreact` are total over valid
+string args (toggle and idempotent remove never reject on state). The client-side
+`Error("invalid reaction kind ... not in the configured allowlist")` is thrown by
+the `Reactions` client when `allowedKinds` is set and `kind` is not in it — raised
+before the component is called.
 
 
 ---
@@ -660,7 +682,7 @@ export const react = mutation({
       .unique();
 
     if (existing !== null) {
-      await ctx.db.delete(existing._id);
+      await ctx.db.delete("reactions", existing._id);
       return { reacted: false, action: "removed" as const };
     }
 
@@ -700,7 +722,7 @@ export const unreact = mutation({
     if (existing === null) {
       return false;
     }
-    await ctx.db.delete(existing._id);
+    await ctx.db.delete("reactions", existing._id);
     return true;
   },
 });
@@ -712,11 +734,46 @@ export const unreact = mutation({
 ## src/component/queries.ts
 
 ```ts
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
+import type { PaginationOptions } from "convex/server";
 import { query } from "./_generated/server";
 import { kindCount, reactionView } from "./validators";
 import type { Doc } from "./_generated/dataModel";
+
+const MAX_PAGE_SIZE = 1000;
+
+function boundedPaginationOptions(
+  paginationOpts: PaginationOptions,
+): PaginationOptions {
+  const { numItems, maximumRowsRead } = paginationOpts;
+  if (
+    !Number.isFinite(numItems) ||
+    !Number.isInteger(numItems) ||
+    numItems < 1 ||
+    numItems > MAX_PAGE_SIZE
+  ) {
+    throw new ConvexError({
+      code: "INVALID_PAGE_SIZE",
+      message: `paginationOpts.numItems must be an integer between 1 and ${MAX_PAGE_SIZE}`,
+    });
+  }
+  if (
+    maximumRowsRead !== undefined &&
+    (!Number.isFinite(maximumRowsRead) ||
+      !Number.isInteger(maximumRowsRead) ||
+      maximumRowsRead < 1)
+  ) {
+    throw new ConvexError({
+      code: "INVALID_PAGE_SIZE",
+      message: "paginationOpts.maximumRowsRead must be a positive finite integer",
+    });
+  }
+  return {
+    ...paginationOpts,
+    maximumRowsRead: Math.min(maximumRowsRead ?? MAX_PAGE_SIZE, MAX_PAGE_SIZE),
+  };
+}
 
 /** Project a stored reaction row to its public view (drops internal fields). */
 function view(row: Doc<"reactions">) {
@@ -826,13 +883,14 @@ export const reactors = query({
     ),
   }),
   handler: async (ctx, args) => {
+    const paginationOpts = boundedPaginationOptions(args.paginationOpts);
     const result = await ctx.db
       .query("reactions")
       .withIndex("by_resource_kind", (q) =>
         q.eq("resourceRef", args.resourceRef).eq("kind", args.kind),
       )
       .order("asc")
-      .paginate(args.paginationOpts);
+      .paginate(paginationOpts);
     return { ...result, page: result.page.map(view) };
   },
 });

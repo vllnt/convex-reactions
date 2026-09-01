@@ -12,6 +12,14 @@ All notable changes to this project are documented here. The format is based on
   dedicated codegen script.
 - Refresh all direct dependencies to their latest compatible releases for canary validation.
 - Require `convex@^1.45.0` and update `convex-test` to `^0.0.56`.
+- Bound reactor pagination to integer page sizes from 1 through 1000 and cap
+  `maximumRowsRead` at 1000 for reactive cursor ranges.
+
+### Breaking
+
+- `reactors` now throws `INVALID_PAGE_SIZE` for invalid numeric pagination
+  options. Use integer `numItems` values from 1 through 1000; larger
+  `maximumRowsRead` values are safely capped.
 
 ## [0.1.0] - 2026-06-14
 

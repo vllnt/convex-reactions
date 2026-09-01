@@ -28,6 +28,6 @@ body:
     id: convex-version
     attributes:
       label: Convex Version
-      placeholder: "1.41.0"
+      placeholder: "1.45.0"
     validations:
       required: true
