@@ -79,8 +79,10 @@ reactive cursor ranges remain bounded. Returns the standard paginated envelope
 
 `reactors` throws `INVALID_PAGE_SIZE` when `paginationOpts.numItems` is outside
 1 through 1000 or when `numItems`/`maximumRowsRead` is not a valid finite
-integer. `react`/`unreact` are total over valid string args (toggle and
-idempotent remove never reject on state). The client-side
+integer. `react` and `unreact` throw `INVALID_REF` when `authorRef` or
+`resourceRef` is an empty string and `INVALID_KIND` when `kind` is an empty string.
+They never reject on state: toggle and idempotent remove are total over valid
+arguments. The client-side
 `Error("invalid reaction kind ... not in the configured allowlist")` is thrown
 by the `Reactions` client when `allowedKinds` is set and `kind` is not in it —
 raised before the component is called.

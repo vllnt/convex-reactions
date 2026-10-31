@@ -47,12 +47,12 @@ concurrency.
 ## Installation
 
 ```bash
-pnpm add @vllnt/convex-reactions@canary convex@^1.45.0
+pnpm add @vllnt/convex-reactions convex@^1.45.0
 ```
 
-Peer dependency: `convex@^1.45.0`. This README follows `main` and the canary
-channel; `latest` is the separate stable release. Pin an exact canary version
-for reproducible installs.
+Peer dependency: `convex@^1.45.0`. The command installs the latest stable
+release; use `@vllnt/convex-reactions@canary` for the newest pre-release build
+from `main`, and pin a resolved canary version for reproducible installs.
 
 ## Quick start
 
@@ -105,9 +105,10 @@ export const tally = internalQuery({
 | `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; bounded to 1000 rows read |
 
 Invalid numeric pagination options throw coded `ConvexError`
-`INVALID_PAGE_SIZE`. Disallowed kinds in `react`/`unreact` throw a plain
-client-side `Error`, not a component error code; query methods do not apply the
-allowlist.
+`INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw
+`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. Disallowed kinds in
+`react`/`unreact` throw a plain client-side `Error`, not a component error code;
+query methods do not apply the allowlist.
 
 Full reference: [docs/API.md](docs/API.md).
 
@@ -148,6 +149,22 @@ pnpm test:coverage  # enforced 100% on covered files
 
 Tests run against the real component runtime via `convex-test`
 (`@edge-runtime/vm`), not mocks.
+
+### Testing your app
+
+`@vllnt/convex-reactions/test` exports `register(t, name = "reactions")` to
+mount the component in a `convex-test` instance. It needs `convex-test` and
+`vitest` (with Vite's `import.meta.glob`) in the consuming app:
+
+```ts
+/// <reference types="vite/client" />
+import { convexTest } from "convex-test";
+import { register } from "@vllnt/convex-reactions/test";
+import schema from "./schema";
+
+const t = convexTest(schema, import.meta.glob("./**/*.ts"));
+register(t);
+```
 
 ## Documentation
 

@@ -1,6 +1,7 @@
+/// <reference types="vite/client" />
 import type { TestConvex } from "convex-test";
-import schema from "./component/schema";
-import { COMPONENT_NAME } from "./shared";
+import schema from "./component/schema.js";
+import { COMPONENT_NAME } from "./shared.js";
 
 const modules = import.meta.glob("./component/**/*.ts");
 

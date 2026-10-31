@@ -1,9 +1,9 @@
 import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import type { PaginationOptions } from "convex/server";
-import { query } from "./_generated/server";
-import { kindCount, reactionView } from "./validators";
-import type { Doc } from "./_generated/dataModel";
+import { query } from "./_generated/server.js";
+import { kindCount, reactionView } from "./validators.js";
+import type { Doc } from "./_generated/dataModel.js";
 
 const MAX_PAGE_SIZE = 1000;
 
