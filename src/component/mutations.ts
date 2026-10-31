@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { mutation } from "./_generated/server";
-import { reactResult } from "./validators";
+import { mutation } from "./_generated/server.js";
+import { reactResult } from "./validators.js";
 
 /**
  * Reject empty refs and kind. An empty ref or kind is never a valid edge key and
