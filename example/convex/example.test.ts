@@ -426,3 +426,146 @@ describe("reactions — host/component table isolation", () => {
     );
   });
 });
+
+describe("reactions — counts stay consistent with rows", () => {
+  type T = ReturnType<typeof setup>;
+
+  /** Total rows listed by `reactors` for one kind. */
+  async function reactorCount(t: T, resourceRef: string, kind: string) {
+    const page = await t.query(api.example.reactors, {
+      resourceRef,
+      kind,
+      paginationOpts: { cursor: null, numItems: 1000 },
+    });
+    return page.page.length;
+  }
+
+  async function countOf(t: T, resourceRef: string, kind: string) {
+    const counts = await t.query(api.example.counts, { resourceRef });
+    return counts.find((c) => c.kind === kind)?.count ?? 0;
+  }
+
+  test("double react (sequential) toggles back to zero, not two", async () => {
+    const t = setup();
+    const args = { authorRef: "u1", resourceRef: "post1", kind: "like" };
+    expect((await t.mutation(api.example.react, args)).action).toBe("added");
+    expect(await countOf(t, "post1", "like")).toBe(1);
+    expect((await t.mutation(api.example.react, args)).action).toBe("removed");
+    expect(await countOf(t, "post1", "like")).toBe(0);
+    expect(await reactorCount(t, "post1", "like")).toBe(0);
+    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual(
+      [],
+    );
+  });
+
+  test("concurrent double react leaves count, rows and hasReacted in agreement", async () => {
+    const t = setup();
+    const args = { authorRef: "u1", resourceRef: "post1", kind: "like" };
+    await Promise.all([
+      t.mutation(api.example.react, args),
+      t.mutation(api.example.react, args),
+    ]);
+    const rows = await reactorCount(t, "post1", "like");
+    expect(rows).toBeLessThanOrEqual(1);
+    expect(await countOf(t, "post1", "like")).toBe(rows);
+    expect(await t.query(api.example.hasReacted, args)).toBe(rows === 1);
+  });
+
+  test("concurrent reactions from distinct subjects are all counted", async () => {
+    const t = setup();
+    const authors = ["a", "b", "c", "d", "e"];
+    await Promise.all(
+      authors.map((authorRef) =>
+        t.mutation(api.example.react, {
+          authorRef,
+          resourceRef: "post1",
+          kind: "up",
+        }),
+      ),
+    );
+    expect(await countOf(t, "post1", "up")).toBe(authors.length);
+    expect(await reactorCount(t, "post1", "up")).toBe(authors.length);
+  });
+
+  test("concurrent react and unreact of one edge never leave count and rows apart", async () => {
+    const t = setup();
+    const args = { authorRef: "u1", resourceRef: "post1", kind: "like" };
+    await t.mutation(api.example.react, args);
+    await Promise.all([
+      t.mutation(api.example.unreact, args),
+      t.mutation(api.example.react, args),
+      t.mutation(api.example.unreact, args),
+    ]);
+    const rows = await reactorCount(t, "post1", "like");
+    expect(rows).toBeLessThanOrEqual(1);
+    expect(await countOf(t, "post1", "like")).toBe(rows);
+    expect(await t.query(api.example.hasReacted, args)).toBe(rows === 1);
+    expect(
+      await t.query(api.example.myReactions, {
+        authorRef: "u1",
+        resourceRef: "post1",
+      }),
+    ).toHaveLength(rows);
+  });
+
+  test("unreact of a missing edge leaves other subjects' counts untouched", async () => {
+    const t = setup();
+    await t.mutation(api.example.react, {
+      authorRef: "u1",
+      resourceRef: "post1",
+      kind: "like",
+    });
+    // Same resource+kind, different subject; same subject, other kind/resource.
+    for (const args of [
+      { authorRef: "u2", resourceRef: "post1", kind: "like" },
+      { authorRef: "u1", resourceRef: "post1", kind: "love" },
+      { authorRef: "u1", resourceRef: "post2", kind: "like" },
+    ]) {
+      expect(await t.mutation(api.example.unreact, args)).toBe(false);
+    }
+    expect(await countOf(t, "post1", "like")).toBe(1);
+    expect(await reactorCount(t, "post1", "like")).toBe(1);
+  });
+
+  test("unreact twice removes once and keeps the other subject's count", async () => {
+    const t = setup();
+    const args = { authorRef: "u1", resourceRef: "post1", kind: "like" };
+    await t.mutation(api.example.react, args);
+    await t.mutation(api.example.react, {
+      authorRef: "u2",
+      resourceRef: "post1",
+      kind: "like",
+    });
+    expect(await t.mutation(api.example.unreact, args)).toBe(true);
+    expect(await t.mutation(api.example.unreact, args)).toBe(false);
+    expect(await countOf(t, "post1", "like")).toBe(1);
+    expect(await reactorCount(t, "post1", "like")).toBe(1);
+  });
+});
+
+describe("reactions — rejects empty refs and kind", () => {
+  const valid = { authorRef: "u1", resourceRef: "post1", kind: "like" };
+  const invalid = [
+    ["authorRef", "INVALID_REF"],
+    ["resourceRef", "INVALID_REF"],
+    ["kind", "INVALID_KIND"],
+  ] as const;
+
+  test.each(invalid)("react rejects an empty %s", async (field, code) => {
+    const t = setup();
+    await expect(
+      t.mutation(api.example.react, { ...valid, [field]: "" }),
+    ).rejects.toMatchObject({ data: { code } });
+    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual(
+      [],
+    );
+    expect(await t.query(api.example.counts, { resourceRef: "" })).toEqual([]);
+  });
+
+  test.each(invalid)("unreact rejects an empty %s", async (field, code) => {
+    const t = setup();
+    await expect(
+      t.mutation(api.example.unreact, { ...valid, [field]: "" }),
+    ).rejects.toMatchObject({ data: { code } });
+  });
+});
