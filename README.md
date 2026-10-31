@@ -47,12 +47,12 @@ concurrency.
 ## Installation
 
 ```bash
-pnpm add @vllnt/convex-reactions@canary convex@^1.45.0
+pnpm add @vllnt/convex-reactions convex@^1.45.0
 ```
 
-Peer dependency: `convex@^1.45.0`. This README follows `main` and the canary
-channel; `latest` is the separate stable release. Pin an exact canary version
-for reproducible installs.
+Peer dependency: `convex@^1.45.0`. The command installs the latest stable
+release; use `@vllnt/convex-reactions@canary` for the newest pre-release build
+from `main`, and pin a resolved canary version for reproducible installs.
 
 ## Quick start
 
@@ -106,9 +106,9 @@ export const tally = internalQuery({
 
 Invalid numeric pagination options throw coded `ConvexError`
 `INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw
-`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. Disallowed kinds in `react`/`unreact` throw a plain
-client-side `Error`, not a component error code; query methods do not apply the
-allowlist.
+`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. Disallowed kinds in
+`react`/`unreact` throw a plain client-side `Error`, not a component error code;
+query methods do not apply the allowlist.
 
 Full reference: [docs/API.md](docs/API.md).
 
