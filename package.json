@@ -1,6 +1,6 @@
 {
   "name": "@vllnt/convex-reactions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reactions, votes, and likes on any resource — toggle, count by kind, and list reactors as a Convex component",
   "license": "MIT",
   "type": "module",
