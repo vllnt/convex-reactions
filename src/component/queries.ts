@@ -50,12 +50,6 @@ function view(row: Doc<"reactions">) {
   };
 }
 
-/**
- * Tally reaction edges per `kind` on one resource from its `reactionCounts`
- * rows (one read per kind), as `{ kind, count }` rows sorted by `kind` for a
- * stable order. A resource with no tally rows yet is counted from its edges. A
- * resource with no reactions returns an empty array.
- */
 export const counts = query({
   args: { resourceRef: v.string() },
   returns: v.array(kindCount),
@@ -66,7 +60,7 @@ export const counts = query({
       .collect();
     const rows =
       tallies.length > 0
-        ? tallies.filter((tally) => tally.count > 0)
+        ? tallies
         : [...(await tallyEdges(ctx, args.resourceRef))].map(([kind, count]) => ({
             kind,
             count,

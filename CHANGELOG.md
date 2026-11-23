@@ -12,13 +12,10 @@ All notable changes to this project are documented here. The format is based on
   O(kinds) reads instead of O(edges), and it no longer hits Convex read limits on popular
   resources. Tallies are seeded per resource on its first `react`/`unreact` after upgrade;
   until then `counts` falls back to scanning edges, so results stay correct without a migration.
+  Seeding reads at most 1001 edges; a legacy resource with more edges is left unseeded and
+  keeps the edge scan. A tally row is deleted when its count reaches zero.
 - `myReactions` uses the `by_author_resource_kind` prefix; the redundant `by_author_resource`
   index is removed (one less index write per `react`/`unreact`).
-
-### Fixed
-
-- Adding an edge rejects refs over 512 characters (`INVALID_REF`) and kinds over 128 characters
-  (`INVALID_KIND`). Removing an existing edge is never blocked.
 
 ## [0.1.1] - Unreleased
 

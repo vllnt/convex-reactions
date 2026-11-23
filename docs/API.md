@@ -54,7 +54,8 @@ the number of distinct subjects that reacted with that kind. A resource with no
 reactions returns `[]`. It reads one stored tally row per kind, which `react`
 and `unreact` keep in step. A resource whose edges predate the tallies is counted
 from its edges (subject to Convex read limits) until its next `react`/`unreact`
-seeds its tallies.
+seeds its tallies; seeding is skipped for a legacy resource with more than 1000
+edges.
 
 ### `hasReacted(ctx, authorRef, resourceRef, kind) → boolean`
 
@@ -82,8 +83,6 @@ reactive cursor ranges remain bounded. Returns the standard paginated envelope
 1 through 1000 or when `numItems`/`maximumRowsRead` is not a valid finite
 integer. `react` and `unreact` throw `INVALID_REF` when `authorRef` or
 `resourceRef` is an empty string and `INVALID_KIND` when `kind` is an empty string.
-Adding a new edge also throws `INVALID_REF` for a ref over 512 characters and
-`INVALID_KIND` for a kind over 128 characters; existing edges can always be removed.
 They never reject on state: toggle and idempotent remove are total over valid
 arguments. The client-side
 `Error("invalid reaction kind ... not in the configured allowlist")` is thrown
