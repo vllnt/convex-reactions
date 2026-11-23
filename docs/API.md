@@ -52,10 +52,9 @@ replayed `unreact` is a safe no-op. A `kind` outside `allowedKinds` throws.
 Tally reaction edges per `kind` on one resource, sorted by `kind`. `count` is
 the number of distinct subjects that reacted with that kind. A resource with no
 reactions returns `[]`. It reads one stored tally row per kind, which `react`
-and `unreact` keep in step. A resource whose edges predate the tallies is counted
-from its edges (subject to Convex read limits) until its next `react`/`unreact`
-seeds its tallies; seeding is skipped for a legacy resource with more than 1000
-edges.
+and `unreact` keep in step. A resource that had reactions before tallies existed
+is counted from its edges (subject to Convex read limits) until all its edges
+are removed.
 
 ### `hasReacted(ctx, authorRef, resourceRef, kind) → boolean`
 

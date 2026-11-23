@@ -117,10 +117,9 @@ Full reference: [docs/API.md](docs/API.md).
 - `allowedKinds?: readonly string[]` is the sole constructor option. Omit it for
   freeform kinds; an empty list rejects every write kind.
 - `counts` reads one stored tally per kind, kept in step by `react` and
-  `unreact`. A resource with no tallies yet (edges written before tallies
-  existed) is counted from its edges until its next `react`/`unreact` seeds
-  them; a legacy resource with more than 1000 edges is not seeded and keeps
-  being counted from its edges. Every write on a resource updates its tally row, so very high write rates
+  `unreact`, for every resource whose first reaction came after tallies existed.
+  A resource that already had reactions before then keeps being counted from
+  its edges (subject to Convex read limits) until all its edges are removed. Every write on a resource updates its tally row, so very high write rates
   on one `(resource, kind)` contend on that row. `myReactions` collects the
   subject's edges on the resource.
 - `react` is a toggle, not an idempotent retry operation: calling twice removes
