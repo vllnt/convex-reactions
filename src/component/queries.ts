@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import type { PaginationOptions } from "convex/server";
 import { query } from "./_generated/server.js";
+import { tallyEdges } from "./tally.js";
 import { kindCount, reactionView } from "./validators.js";
 import type { Doc } from "./_generated/dataModel.js";
 
@@ -49,29 +50,25 @@ function view(row: Doc<"reactions">) {
   };
 }
 
-/**
- * Tally reaction edges per `kind` on one resource. Reads every edge for
- * `resourceRef` via the `by_resource_kind` index (which is prefixed by
- * `resourceRef`, so a `resourceRef`-only range spans all kinds) and groups them
- * into `{ kind, count }` rows, sorted by `kind` for a stable order. A resource
- * with no reactions returns an empty array.
- */
 export const counts = query({
   args: { resourceRef: v.string() },
   returns: v.array(kindCount),
   handler: async (ctx, args) => {
-    const rows = await ctx.db
-      .query("reactions")
+    const tallies = await ctx.db
+      .query("reactionCounts")
       .withIndex("by_resource_kind", (q) => q.eq("resourceRef", args.resourceRef))
       .collect();
-    const tally = new Map<string, number>();
-    for (const row of rows) {
-      tally.set(row.kind, (tally.get(row.kind) ?? 0) + 1);
-    }
+    const rows =
+      tallies.length > 0
+        ? tallies
+        : [...(await tallyEdges(ctx, args.resourceRef))].map(([kind, count]) => ({
+            kind,
+            count,
+          }));
     // Sort by kind for a stable, deterministic order. `localeCompare` is a
     // single expression (no comparator branch), so coverage stays exact.
-    return [...tally.entries()]
-      .map(([kind, count]) => ({ kind, count }))
+    return rows
+      .map(({ kind, count }) => ({ kind, count }))
       .sort((a, b) => a.kind.localeCompare(b.kind));
   },
 });
@@ -113,7 +110,7 @@ export const myReactions = query({
   handler: async (ctx, args) => {
     const rows = await ctx.db
       .query("reactions")
-      .withIndex("by_author_resource", (q) =>
+      .withIndex("by_author_resource_kind", (q) =>
         q.eq("authorRef", args.authorRef).eq("resourceRef", args.resourceRef),
       )
       .collect();

@@ -18,6 +18,7 @@ export default defineConfig({
         "src/client/index.ts",
         "src/component/mutations.ts",
         "src/component/queries.ts",
+        "src/component/tally.ts",
         "src/component/validators.ts",
         "src/component/schema.ts",
       ],

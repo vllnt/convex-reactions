@@ -116,9 +116,12 @@ Full reference: [docs/API.md](docs/API.md).
 
 - `allowedKinds?: readonly string[]` is the sole constructor option. Omit it for
   freeform kinds; an empty list rejects every write kind.
-- `counts` scans every edge on a resource and groups by kind; it is not a
-  constant-time aggregate and is subject to Convex read limits. `myReactions`
-  also collects its matching edges.
+- `counts` reads one stored tally per kind, kept in step by `react` and
+  `unreact`, for every resource whose first reaction came after tallies existed.
+  A resource that already had reactions before then keeps being counted from
+  its edges (subject to Convex read limits) until all its edges are removed. Every write on a resource updates its tally row, so very high write rates
+  on one `(resource, kind)` contend on that row. `myReactions` collects the
+  subject's edges on the resource.
 - `react` is a toggle, not an idempotent retry operation: calling twice removes
   the edge. Use `unreact` to ensure absence.
 - Mount another isolated instance with `app.use(reactions, { name: "votes" })`

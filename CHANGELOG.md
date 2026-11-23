@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `counts` reads one `reactionCounts` tally row per kind instead of every edge on the resource:
+  O(kinds) reads instead of O(edges). Tallies cover every resource whose first reaction came
+  after upgrade; a resource with earlier edges keeps the edge scan (no migration, and writes never
+  scan legacy edges). A tally row is deleted when its count reaches zero.
+- `myReactions` uses the `by_author_resource_kind` prefix; the redundant `by_author_resource`
+  index is removed (one less index write per `react`/`unreact`).
+
 ## [0.1.1] - Unreleased
 
 ### Fixed
