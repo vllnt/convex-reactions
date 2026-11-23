@@ -106,7 +106,9 @@ export const tally = internalQuery({
 
 Invalid numeric pagination options throw coded `ConvexError`
 `INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw
-`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. Disallowed kinds in
+`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. A new edge also throws
+`INVALID_REF` for a ref over 512 characters and `INVALID_KIND` for a kind over
+128 characters. Disallowed kinds in
 `react`/`unreact` throw a plain client-side `Error`, not a component error code;
 query methods do not apply the allowlist.
 
