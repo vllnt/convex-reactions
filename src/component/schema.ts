@@ -14,8 +14,13 @@ import { v } from "convex/values";
  *   transaction).
  * - `by_resource_kind` — count edges of one kind on a resource and page its
  *   reactors oldest-first.
- * - `by_author_resource` — list every kind a subject placed on a resource
- *   (`myReactions`).
+ * - `by_author_resource_kind` also serves `myReactions` through its
+ *   `(authorRef, resourceRef)` prefix.
+ *
+ * `reactionCounts` holds one live tally per `(resourceRef, kind)`, kept in step
+ * by `react` / `unreact`, so `counts` reads one row per kind instead of every
+ * edge. A resource with no tally rows predates the table and is counted from
+ * its edges until its next write creates the tallies.
  */
 export default defineSchema({
   reactions: defineTable({
@@ -25,6 +30,10 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_author_resource_kind", ["authorRef", "resourceRef", "kind"])
-    .index("by_resource_kind", ["resourceRef", "kind", "createdAt"])
-    .index("by_author_resource", ["authorRef", "resourceRef"]),
+    .index("by_resource_kind", ["resourceRef", "kind", "createdAt"]),
+  reactionCounts: defineTable({
+    resourceRef: v.string(),
+    kind: v.string(),
+    count: v.number(),
+  }).index("by_resource_kind", ["resourceRef", "kind"]),
 });

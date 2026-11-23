@@ -1,6 +1,25 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server.js";
 import { reactResult } from "./validators.js";
+import { adjustCount } from "./tally.js";
+
+const MAX_REF_LENGTH = 512;
+const MAX_KIND_LENGTH = 128;
+
+function assertEdgeSize(args: { authorRef: string; resourceRef: string; kind: string }): void {
+  if (args.authorRef.length > MAX_REF_LENGTH || args.resourceRef.length > MAX_REF_LENGTH) {
+    throw new ConvexError({
+      code: "INVALID_REF",
+      message: `authorRef and resourceRef must be at most ${String(MAX_REF_LENGTH)} characters`,
+    });
+  }
+  if (args.kind.length > MAX_KIND_LENGTH) {
+    throw new ConvexError({
+      code: "INVALID_KIND",
+      message: `kind must be at most ${String(MAX_KIND_LENGTH)} characters`,
+    });
+  }
+}
 
 /**
  * Reject empty refs and kind. An empty ref or kind is never a valid edge key and
@@ -61,10 +80,13 @@ export const react = mutation({
       .unique();
 
     if (existing !== null) {
+      await adjustCount(ctx, args.resourceRef, args.kind, -1);
       await ctx.db.delete("reactions", existing._id);
       return { reacted: false, action: "removed" as const };
     }
 
+    assertEdgeSize(args);
+    await adjustCount(ctx, args.resourceRef, args.kind, 1);
     await ctx.db.insert("reactions", {
       authorRef: args.authorRef,
       resourceRef: args.resourceRef,
@@ -103,6 +125,7 @@ export const unreact = mutation({
     if (existing === null) {
       return false;
     }
+    await adjustCount(ctx, args.resourceRef, args.kind, -1);
     await ctx.db.delete("reactions", existing._id);
     return true;
   },

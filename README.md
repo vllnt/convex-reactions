@@ -106,7 +106,9 @@ export const tally = internalQuery({
 
 Invalid numeric pagination options throw coded `ConvexError`
 `INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw
-`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. Disallowed kinds in
+`INVALID_REF` and an empty `kind` throws `INVALID_KIND`. A new edge also throws
+`INVALID_REF` for a ref over 512 characters and `INVALID_KIND` for a kind over
+128 characters. Disallowed kinds in
 `react`/`unreact` throw a plain client-side `Error`, not a component error code;
 query methods do not apply the allowlist.
 
@@ -116,9 +118,12 @@ Full reference: [docs/API.md](docs/API.md).
 
 - `allowedKinds?: readonly string[]` is the sole constructor option. Omit it for
   freeform kinds; an empty list rejects every write kind.
-- `counts` scans every edge on a resource and groups by kind; it is not a
-  constant-time aggregate and is subject to Convex read limits. `myReactions`
-  also collects its matching edges.
+- `counts` reads one stored tally per kind, kept in step by `react` and
+  `unreact`. A resource with no tallies yet (edges written before tallies
+  existed) is counted from its edges until its next `react`/`unreact` seeds
+  them. Every write on a resource updates its tally row, so very high write rates
+  on one `(resource, kind)` contend on that row. `myReactions` collects the
+  subject's edges on the resource.
 - `react` is a toggle, not an idempotent retry operation: calling twice removes
   the edge. Use `unreact` to ensure absence.
 - Mount another isolated instance with `app.use(reactions, { name: "votes" })`
