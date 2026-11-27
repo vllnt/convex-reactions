@@ -172,7 +172,7 @@ register(t);
 ## Documentation
 
 [API reference](docs/API.md) · [LLM index](llms.txt) ·
-[Changelog](CHANGELOG.md) · [Security policy](SECURITY.md)
+[Changelog](CHANGELOG.md) · [Security policy](https://github.com/vllnt/convex-reactions/blob/main/SECURITY.md)
 
 `llms.txt` is the maintained discovery index. `pnpm generate:llms` checks its
 heading and local links without generating a source bundle.
@@ -197,7 +197,7 @@ TypeScript source in `src/`. Read them before writing code.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/vllnt/convex-reactions/blob/main/CONTRIBUTING.md).
 
 ## Author
 

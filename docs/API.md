@@ -90,14 +90,27 @@ reactive cursor ranges remain bounded. Returns the standard paginated envelope
 (`page`, `isDone`, `continueCursor`). `ReactionView` is
 `{ authorRef, resourceRef, kind, createdAt }`.
 
+## Tables
+
+The component's sandboxed tables, reached only through the functions above:
+
+- `reactions` — one row per edge `{ authorRef, resourceRef, kind, createdAt }`.
+  Indexes: `by_author_resource_kind` (`authorRef`, `resourceRef`, `kind`; the
+  uniqueness key, whose prefix `myReactions` reads) and `by_resource_kind`
+  (`resourceRef`, `kind`, `createdAt`; reactor paging and the legacy edge
+  count).
+- `reactionCounts` — one tally row per resource and kind
+  `{ resourceRef, kind, count }`, index `by_resource_kind` (`resourceRef`,
+  `kind`). A row is deleted when its count reaches zero.
+
 ## Error codes
 
 `reactors` throws `INVALID_PAGE_SIZE` when `paginationOpts.numItems` is outside
 1 through 1000 or when `numItems`/`maximumRowsRead` is not a valid finite
 integer. `react` and `unreact` throw `INVALID_REF` when `authorRef` or
-`resourceRef` is an empty string and `INVALID_KIND` when `kind` is an empty
-string. They never reject on state: toggle and idempotent remove are total over
-valid arguments. The client-side
+`resourceRef` is an empty string and `INVALID_KIND` when `kind` is an empty string.
+They never reject on state: toggle and idempotent remove are total over valid
+arguments. The client-side
 `Error("invalid reaction kind ... not in the configured allowlist")` is thrown
 by the `Reactions` client when `allowedKinds` is set and `kind` is not in it —
 raised before the component is called.
