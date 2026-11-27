@@ -2,6 +2,20 @@
 
 **Compatibility:** `convex@^1.45.0`
 
+## Entry points
+
+| Import                                         | Exports                                                                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `@vllnt/convex-reactions`                      | `Reactions` class; types `ReactionsComponent`, `ReactionsOptions`, `ReactResult`, `KindCount`, `ReactionView` |
+| `@vllnt/convex-reactions/convex.config`        | the component definition (default export) for `app.use(...)`                                                  |
+| `@vllnt/convex-reactions/_generated/component` | type `ComponentApi` (types only)                                                                              |
+| `@vllnt/convex-reactions/test`                 | `register(t, name = "reactions")` to mount the component in a `convex-test` instance                          |
+
+The `.js`-suffixed subpaths (`/convex.config.js`, `/_generated/component.js`)
+resolve to the same files.
+
+## Client
+
 Construct the client with the mounted component and optional config:
 
 ```ts
@@ -81,9 +95,9 @@ reactive cursor ranges remain bounded. Returns the standard paginated envelope
 `reactors` throws `INVALID_PAGE_SIZE` when `paginationOpts.numItems` is outside
 1 through 1000 or when `numItems`/`maximumRowsRead` is not a valid finite
 integer. `react` and `unreact` throw `INVALID_REF` when `authorRef` or
-`resourceRef` is an empty string and `INVALID_KIND` when `kind` is an empty string.
-They never reject on state: toggle and idempotent remove are total over valid
-arguments. The client-side
+`resourceRef` is an empty string and `INVALID_KIND` when `kind` is an empty
+string. They never reject on state: toggle and idempotent remove are total over
+valid arguments. The client-side
 `Error("invalid reaction kind ... not in the configured allowlist")` is thrown
 by the `Reactions` client when `allowedKinds` is set and `kind` is not in it —
 raised before the component is called.

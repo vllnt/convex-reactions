@@ -15,6 +15,13 @@ All notable changes to this project are documented here. The format is based on
 - `myReactions` uses the `by_author_resource_kind` prefix; the redundant `by_author_resource`
   index is removed (one less index write per `react`/`unreact`).
 
+### Documentation
+
+- The npm package now ships `docs/API.md`, `CHANGELOG.md`, and `llms.txt` next to `README.md`, so
+  the docs under `node_modules/@vllnt/convex-reactions/` match the installed version. `llms.txt`
+  links shipped files relatively and repository-only files by URL; `docs/API.md` lists every entry
+  point. `pnpm lint` fails when a required doc is missing from the tarball.
+
 ## [0.1.1] - Unreleased
 
 ### Fixed

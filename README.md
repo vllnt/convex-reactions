@@ -171,11 +171,29 @@ register(t);
 
 ## Documentation
 
+[API reference](docs/API.md) · [LLM index](llms.txt) ·
+[Changelog](CHANGELOG.md) · [Security policy](SECURITY.md)
+
 `llms.txt` is the maintained discovery index. `pnpm generate:llms` checks its
 heading and local links without generating a source bundle.
 
-[API reference](docs/API.md) · [LLM index](llms.txt) ·
-[Security policy](SECURITY.md)
+### For coding agents
+
+The docs are bundled at `node_modules/@vllnt/convex-reactions/docs/` and match
+the installed version, as do `README.md`, `CHANGELOG.md`, `llms.txt`, and the
+TypeScript source in `src/`. Read them before writing code.
+
+## Related packages
+
+- [`@vllnt/convex-comments`](https://oss.vllnt.com/packages/convex-comments) —
+  threaded comments on a resource. Use it for written replies; use reactions for
+  one-tap votes, likes, and emoji.
+- [`@vllnt/convex-notifications`](https://oss.vllnt.com/packages/convex-notifications)
+  — per-subject inbox. Use it to tell an author someone reacted; reactions only
+  stores and counts the edge.
+- [`@vllnt/convex-events`](https://oss.vllnt.com/packages/convex-events) —
+  append-only activity feed. Use it to keep a history of who did what; reactions
+  keeps only the current toggle state.
 
 ## Contributing
 
@@ -186,11 +204,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 Built by [bntvllnt](https://github.com/bntvllnt) ·
 [bntvllnt.com](https://bntvllnt.com) · [X @bntvllnt](https://x.com/bntvllnt)
 
-Part of the [@vllnt](https://github.com/vllnt) Convex component fleet —
-[vllnt.com](https://vllnt.com)
-
 If this is useful, [sponsor the work](https://github.com/sponsors/bntvllnt).
 
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+Part of vllnt oss: https://oss.vllnt.com
