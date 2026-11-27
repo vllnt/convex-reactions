@@ -111,6 +111,7 @@ second instance (`app.use(component, { name })`) for a static partition (e.g. em
 | Error model | `docs/API.md` → `## Error codes` section |
 | `peerDependencies.convex` version | `llms.txt` context line (`convex@^X.Y.Z`), `docs/API.md` Compatibility line, README Installation peer note |
 | Uniqueness / toggle semantics | `docs/API.md` mutation sections, Key design decisions above |
+| Shipped docs (`package.json` `files`) | `required` list in `scripts/check-package-files.mjs`, `paths` in `.github/workflows/publish.yml`; relative `./` links in `llms.txt` only for shipped files |
 | Any change | `pnpm generate:llms` to validate the `llms.txt` index (it generates nothing) |
 
 Grep old values before committing (e.g. after a `peerDependencies.convex` bump, `git grep "1.41.0"` → only the new range survives).

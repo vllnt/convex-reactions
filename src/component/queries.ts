@@ -101,8 +101,8 @@ export const hasReacted = query({
 
 /**
  * Every reaction kind a subject placed on one resource (their own reaction
- * state across kinds), via the `by_author_resource` index. Returns the list of
- * `kind` strings; empty when the subject has not reacted to the resource.
+ * state across kinds), via the `by_author_resource_kind` prefix. Returns the
+ * list of `kind` strings; empty when the subject has not reacted to the resource.
  */
 export const myReactions = query({
   args: { authorRef: v.string(), resourceRef: v.string() },

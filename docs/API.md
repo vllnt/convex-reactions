@@ -2,6 +2,20 @@
 
 **Compatibility:** `convex@^1.45.0`
 
+## Entry points
+
+| Import                                         | Exports                                                                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `@vllnt/convex-reactions`                      | `Reactions` class; types `ReactionsComponent`, `ReactionsOptions`, `ReactResult`, `KindCount`, `ReactionView` |
+| `@vllnt/convex-reactions/convex.config`        | the component definition (default export) for `app.use(...)`                                                  |
+| `@vllnt/convex-reactions/_generated/component` | type `ComponentApi` (types only)                                                                              |
+| `@vllnt/convex-reactions/test`                 | `register(t, name = "reactions")` to mount the component in a `convex-test` instance                          |
+
+The `.js`-suffixed subpaths (`/convex.config.js`, `/_generated/component.js`)
+resolve to the same files.
+
+## Client
+
 Construct the client with the mounted component and optional config:
 
 ```ts
@@ -75,6 +89,19 @@ provided, must be a positive finite integer and is capped at 1000 so explicit
 reactive cursor ranges remain bounded. Returns the standard paginated envelope
 (`page`, `isDone`, `continueCursor`). `ReactionView` is
 `{ authorRef, resourceRef, kind, createdAt }`.
+
+## Tables
+
+The component's sandboxed tables, reached only through the functions above:
+
+- `reactions` — one row per edge `{ authorRef, resourceRef, kind, createdAt }`.
+  Indexes: `by_author_resource_kind` (`authorRef`, `resourceRef`, `kind`; the
+  uniqueness key, whose prefix `myReactions` reads) and `by_resource_kind`
+  (`resourceRef`, `kind`, `createdAt`; reactor paging and the legacy edge
+  count).
+- `reactionCounts` — one tally row per resource and kind
+  `{ resourceRef, kind, count }`, index `by_resource_kind` (`resourceRef`,
+  `kind`). A row is deleted when its count reaches zero.
 
 ## Error codes
 
