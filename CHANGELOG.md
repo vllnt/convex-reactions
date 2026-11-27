@@ -21,7 +21,7 @@ All notable changes to this project are documented here. The format is based on
   the docs under `node_modules/@vllnt/convex-reactions/` match the installed version. `llms.txt`
   links shipped files relatively and repository-only files by URL; `docs/API.md` lists every entry
   point and the component's tables. `pnpm lint` fails when a required doc is missing from the
-  tarball or an `llms.txt` link points outside it.
+  tarball, a contributor file, internal doc, or test ships, or an `llms.txt` link points outside it.
 
 ## [0.1.1] - Unreleased
 
