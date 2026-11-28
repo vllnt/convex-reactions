@@ -11,9 +11,7 @@ const { version } = JSON.parse(readFileSync("package.json", "utf8"));
 // "```js" line does not close it.
 const headings = [];
 let fence = null;
-for (const raw of readFileSync(process.argv[2] ?? "CHANGELOG.md", "utf8").split(
-  /\r?\n/,
-)) {
+for (const raw of readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/)) {
   const line = raw.trimEnd();
   const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
   const closing = /^\s{0,3}(`{3,}|~{3,})$/.exec(line)?.[1];

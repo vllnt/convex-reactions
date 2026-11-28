@@ -31,6 +31,8 @@ jobs:
       - run: pnpm lint
       - name: Test the package contents check
         run: bash scripts/test-check-package-contents.sh
+      - name: Test the changelog check
+        run: bash scripts/test-check-changelog.sh
 
   typecheck:
     name: Typecheck

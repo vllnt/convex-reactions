@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 /** README `##` sections, in this order. */
-export const SECTIONS = [
+const SECTIONS = [
   "For coding agents",
   "When to use",
   "Install",
@@ -47,11 +47,11 @@ const MARKETING =
   /\b(?:blazing|seamless(?:ly)?|powerful|effortless(?:ly)?|robust|world-class|best-in-class|cutting-edge|recommend(?:s|ed)?)\b/iu;
 
 /** @param {string} name package name without the scope */
-export const footer = (name) =>
+const footer = (name) =>
   `---\n\nPart of [vllnt open source](${OSS}) · [Package page](${OSS}/packages/${name}) · [vllnt.com](https://vllnt.com) · Built by [bntvllnt](${AUTHOR})\n`;
 
 /** @param {string} name package name without the scope */
-export const ecosystem = (name) =>
+const ecosystem = (name) =>
   [
     "## Ecosystem\n",
     `- [Package page](${OSS}/packages/${name})`,
@@ -67,7 +67,7 @@ export const ecosystem = (name) =>
  * @param {string} name package name without the scope
  * @param {string} repository GitHub repository URL without `.git`
  */
-export const links = (name, repository) =>
+const links = (name, repository) =>
   [
     `- Docs and changelog: [oss.vllnt.com/packages/${name}](${OSS}/packages/${name}) · [release feed](${OSS}/packages/${name}/rss.xml)`,
     `- All @vllnt packages: [oss.vllnt.com](${OSS}) · [search packages and docs on index.vllnt.com](https://index.vllnt.com)`,
@@ -78,7 +78,7 @@ export const links = (name, repository) =>
   ].join("\n");
 
 /** GitHub heading anchor. @param {string} heading */
-export const slug = (heading) =>
+const slug = (heading) =>
   heading
     .trim()
     .toLowerCase()
@@ -87,10 +87,12 @@ export const slug = (heading) =>
 
 /**
  * Fenced code blocks with 1-based start lines. A fence closes only on a line
- * of fence characters, so "```js" inside a block does not close it.
+ * of fence characters, so "```js" inside a block does not close it. A fence
+ * indented 4 or more spaces outside a block fails: Markdown renders it as an
+ * indented code block, so its example would escape the checks.
  * @param {string} text
  */
-export function codeBlocks(text) {
+function codeBlocks(text) {
   /** @type {{ code: string, lang: string, line: number }[]} */
   const blocks = [];
   /** @type {{ fence: string, lang: string, line: number, lines: string[] } | undefined} */
@@ -98,6 +100,11 @@ export function codeBlocks(text) {
   text.split("\n").forEach((line, index) => {
     const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/u.exec(line);
     if (open === undefined) {
+      assert.doesNotMatch(
+        line,
+        /^ {4,}(?:`{3,}|~{3,})/u,
+        `line ${String(index + 1)}: indent code fences 3 spaces at most`,
+      );
       if (marker) {
         const [, fence = "", info = ""] = marker;
         open = { fence, lang: info.trim(), line: index + 1, lines: [] };
@@ -259,9 +266,13 @@ function checkTop(readme, packageName) {
   });
 }
 
+/** A TypeScript info string such as `typescript`, `tsx` or `ts title=x`. */
+const TYPESCRIPT = /^(?:[cm]?ts|tsx|typescript)(?![\w-])/iu;
+
 /**
- * Every block has a language; README and docs `ts` blocks are complete files
- * that start with a `// <path>.ts` comment and have no `...` gaps.
+ * Every block has a language; README and docs TypeScript blocks are tagged
+ * exactly `ts` (only those are type-checked), are complete files that start
+ * with a `// <path>.ts` comment and have no `...` gaps.
  * @param {Record<string, string>} texts
  */
 function checkCode(texts) {
@@ -272,7 +283,14 @@ function checkCode(texts) {
   });
   return ["README.md", "docs/API.md"].flatMap((file) =>
     codeBlocks(String(texts[file]))
-      .filter((block) => block.lang === "ts")
+      .filter((block) => {
+        const typescript = TYPESCRIPT.test(block.lang);
+        assert.ok(
+          !typescript || block.lang === "ts",
+          `${file}:${String(block.line)}: "${block.lang}" escapes type-checking; tag TypeScript examples exactly \`ts\``,
+        );
+        return typescript;
+      })
       .map((block) => {
         const where = `${file}:${String(block.line)}`;
         const gap = /^\s*(?:\/\/\s*)?(?:\.\.\.|…)\s*$/mu;
