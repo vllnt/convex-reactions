@@ -14,6 +14,9 @@ All notable changes to this project are documented here. The format is based on
   scan legacy edges). A tally row is deleted when its count reaches zero.
 - `myReactions` uses the `by_author_resource_kind` prefix; the redundant `by_author_resource`
   index is removed (one less index write per `react`/`unreact`).
+- Development and test toolchain: `convex` 1.51, `convex-test` 0.0.73, Vitest 5.1.1, ESLint 10,
+  and `@vllnt/typescript` 3 (stricter compiler flags; the built JavaScript and `.d.ts` output is
+  unchanged). The `convex` peer range stays `^1.45.0`.
 
 ### Documentation
 
@@ -22,6 +25,9 @@ All notable changes to this project are documented here. The format is based on
   links shipped files relatively and repository-only files by URL; `docs/API.md` lists every entry
   point and the component's tables. `pnpm lint` fails when a required doc is missing from the
   tarball, a contributor file, internal doc, or test ships, or an `llms.txt` link points outside it.
+- `reactors` docs no longer claim the 1000-row `maximumRowsRead` cap covers reactive cursor
+  ranges: with an `endCursor`, Convex returns the whole range between the cursors and ignores
+  `maximumRowsRead` (only its transaction read limits apply). Behavior is unchanged.
 
 ## [0.1.1] - Unreleased
 
