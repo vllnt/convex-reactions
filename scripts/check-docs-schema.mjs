@@ -8,11 +8,11 @@ const mentionDocs = ["AGENTS.md", "docs/API.md"];
 const scanDocs = [...mentionDocs, "README.md", "llms.txt"];
 
 const schema = readFileSync(schemaPath, "utf8");
-const tables = [...schema.matchAll(/^\s*(\w+): defineTable\(/gm)].map(
+const tables = [...schema.matchAll(/^\s*(\w+):\s*defineTable\(/gm)].map(
   ([, name]) => name,
 );
 const indexes = new Set(
-  [...schema.matchAll(/\.index\("(\w+)"/g)].map(([, name]) => name),
+  [...schema.matchAll(/\.index\(\s*"(\w+)"/g)].map(([, name]) => name),
 );
 const errors = [];
 if (tables.length === 0 || indexes.size === 0) {

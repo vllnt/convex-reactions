@@ -5,9 +5,21 @@ import { readFileSync } from "node:fs";
 // unreleased (undated) section, placed first. Released sections carry a date:
 // `## [X.Y.Z] - YYYY-MM-DD`.
 const { version } = JSON.parse(readFileSync("package.json", "utf8"));
-const headings = readFileSync("CHANGELOG.md", "utf8")
-  .split("\n")
-  .filter((line) => line.startsWith("## "));
+// CRLF is normalised, trailing whitespace on a heading is ignored, and `## `
+// lines inside fenced code blocks are not headings.
+const headings = [];
+let fence = null;
+for (const raw of readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/)) {
+  const line = raw.trimEnd();
+  const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+  if (fence === null && marker !== undefined) {
+    fence = marker;
+  } else if (fence !== null && line.trim().startsWith(fence)) {
+    fence = null;
+  } else if (fence === null && line.startsWith("## ")) {
+    headings.push(line);
+  }
+}
 const dated = /^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}$/;
 const errors = [];
 
