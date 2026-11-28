@@ -13,8 +13,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   would leave stale counts.
 - Edges with an empty `authorRef`, `resourceRef`, or `kind` stored under 0.1.0
   can no longer be removed through `react` or `unreact` (they now throw
-  `INVALID_REF` or `INVALID_KIND` first). If you have such rows, remove them
-  yourself; a resource that holds one keeps counting from edges.
+  `INVALID_REF` or `INVALID_KIND` first), and the host cannot write component
+  tables from code. To remove them, select the component in the Convex
+  dashboard's component dropdown, open its `reactions` table in the data view,
+  and delete the rows. A resource that holds one keeps counting from edges until
+  all its edges are removed.
 
 ### Fixed
 
@@ -52,6 +55,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Documentation
 
+- README rewritten for coding agents with fixed sections: when to use (and when
+  not to), install, a complete quick start, an API table of every export, common
+  tasks, an errors-and-fixes table, limits and gotchas, and compatibility.
+  `docs/API.md` has one heading per export and method; `llms.txt` gains the same
+  summary, when-to-use list and an Ecosystem block. The `package.json`
+  description and keywords now name the problem and the stack. `pnpm lint` runs
+  `scripts/check-documentation.mjs`, and the new `pnpm test:package` installs
+  the packed tarball, imports every entry point, and type-checks every README
+  and `docs/API.md` example against it on `convex` 1.45.0. Behavior is
+  unchanged.
 - The npm package now ships `docs/API.md`, `CHANGELOG.md`, and `llms.txt` next
   to `README.md`, so the docs under `node_modules/@vllnt/convex-reactions/`
   match the installed version. `llms.txt` links shipped files relatively and

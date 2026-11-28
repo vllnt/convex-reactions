@@ -138,11 +138,11 @@ the host namespaces refs itself, or mounts a second instance
 
 | Changed                                                                      | Update in the same commit                                                                                                                                  |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public API (react/unreact/counts/hasReacted/myReactions/reactors signatures) | README API Reference table, `docs/API.md`, `llms.txt` context                                                                                              |
-| Config options / defaults (allowedKinds)                                     | README Options and limitations, `docs/API.md` `## Client` section                                                                                          |
+| Public API (react/unreact/counts/hasReacted/myReactions/reactors signatures) | README `## API` table and `## Common tasks`, `docs/API.md` headings, `llms.txt` context                                                                    |
+| Config options / defaults (allowedKinds)                                     | README `## Limits and gotchas`, `docs/API.md` `## Client` section                                                                                          |
 | Schema / table / indexes                                                     | Architecture above, `docs/API.md` `## Tables` (checked by `pnpm check:docs`, see below)                                                                    |
-| Error model                                                                  | `docs/API.md` → `## Error codes` section                                                                                                                   |
-| `peerDependencies.convex` version                                            | `llms.txt` context line (`convex@^X.Y.Z`), `docs/API.md` Compatibility line, README Installation peer note                                                 |
+| Error model                                                                  | README `## Errors and fixes` table, `docs/API.md` `## Error codes`                                                                                         |
+| `peerDependencies.convex` version                                            | `llms.txt` context line (`convex@^X.Y.Z`), `docs/API.md` Compatibility line, README `## Install` and `## Compatibility`                                    |
 | Uniqueness / toggle semantics                                                | `docs/API.md` mutation sections, Key design decisions above                                                                                                |
 | Shipped docs (`package.json` `files`)                                        | `required` list in `scripts/check-package-files.mjs`, `paths` in `.github/workflows/publish.yml`; relative `./` links in `llms.txt` only for shipped files |
 | Any change                                                                   | `pnpm generate:llms` to validate the `llms.txt` index (it generates nothing)                                                                               |
@@ -151,6 +151,16 @@ the host namespaces refs itself, or mounts a second instance
 `docs/API.md` does not mention every table and index name in backticks, or when
 AGENTS.md, `docs/API.md`, README.md, or `llms.txt` names a backticked `by_*`
 index the schema does not define. It does not flag unknown table names.
+
+`pnpm check:documentation` (in `pnpm lint`) enforces the agent-first docs
+contract: README `##` sections and their order, install and first example in the
+first 40 lines, tagged and complete `ts` examples, resolving relative links,
+every public export (TSDoc summary, README `## API` row, `docs/API.md` heading)
+and every error code and `Error` message documented, the shared Links, footer
+and `llms.txt` Ecosystem blocks, and the `package.json` description and
+keywords. `pnpm test:package` (after `pnpm build`) reruns it on the installed
+tarball and type-checks every README and `docs/API.md` `ts` example against the
+built package.
 
 Grep old values before committing (e.g. after a `peerDependencies.convex` bump,
 `git grep "1.41.0"` → only the new range survives).

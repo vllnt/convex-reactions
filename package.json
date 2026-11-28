@@ -1,7 +1,7 @@
 {
   "name": "@vllnt/convex-reactions",
   "version": "0.1.1",
-  "description": "Reactions, votes, and likes on any resource — toggle, count by kind, and list reactors as a Convex component",
+  "description": "TypeScript Convex component for emoji reactions, up/down votes and likes on any resource: toggle a reaction, count per kind, page who reacted.",
   "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@10.34.8",
@@ -44,16 +44,18 @@
     "build:clean": "rm -rf dist *.tsbuildinfo && pnpm build:codegen",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/typecheck.tsbuildinfo",
     "typecheck:ci": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/typecheck-ci.tsbuildinfo --project tsconfig.ci.json && tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/typecheck-test.tsbuildinfo --project tsconfig.test.json",
-    "lint": "pnpm check:agents && pnpm check:package && pnpm check:docs && pnpm check:changelog && pnpm format:check && eslint --cache --cache-location node_modules/.cache/eslint/ .",
+    "lint": "pnpm check:agents && pnpm check:package && pnpm check:docs && pnpm check:documentation && pnpm check:changelog && pnpm format:check && eslint --cache --cache-location node_modules/.cache/eslint/ .",
     "format:check": "prettier --check .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --typecheck --clearScreen false",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
+    "test:package": "node scripts/test-package.mjs",
     "generate:llms": "node scripts/generate-llms.mjs",
     "preversion": "pnpm install --frozen-lockfile && pnpm build && pnpm test:coverage && pnpm typecheck && pnpm typecheck:ci && pnpm generate:llms",
     "check:agents": "node -e \"const f=require('node:fs');if(!f.existsSync('AGENTS.md')||f.existsSync('CLAUDE.md')||f.existsSync('.claude'))process.exit(1)\"",
     "check:package": "node scripts/check-package-files.mjs",
     "check:docs": "node scripts/check-docs-schema.mjs",
+    "check:documentation": "node scripts/check-documentation.mjs",
     "check:changelog": "node scripts/check-changelog.mjs",
     "codegen": "pnpm convex codegen --component-dir ./src/component"
   },
@@ -114,8 +116,13 @@
   "keywords": [
     "convex",
     "convex-component",
+    "typescript",
     "reactions",
+    "emoji-reactions",
     "votes",
-    "likes"
+    "upvote",
+    "downvote",
+    "likes",
+    "reaction-counts"
   ]
 }

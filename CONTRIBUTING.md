@@ -24,6 +24,7 @@ Tests use [`convex-test`](https://docs.convex.dev/testing) with the
 pnpm test           # single run
 pnpm test:watch     # watch mode
 pnpm test:coverage  # enforced 100% on covered files
+pnpm test:package   # after pnpm build: install the packed tarball, check docs and examples
 ```
 
 Coverage is gated at 100% (`vitest.config.mts`). Every public method needs a
@@ -46,7 +47,7 @@ concurrency).
 - One logical change per PR
 - Include tests for new behavior or bug fixes
 - Ensure all checks pass:
-  `pnpm typecheck && pnpm lint && pnpm test:coverage && pnpm build`
+  `pnpm typecheck && pnpm lint && pnpm test:coverage && pnpm build && pnpm test:package`
 
 ## Releases
 

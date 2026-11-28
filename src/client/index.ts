@@ -96,6 +96,8 @@ interface RunMutationCtx {
  * const tally = await reactions.counts(ctx, postId);     // [{ kind: "up", count: 1 }]
  * const mine = await reactions.myReactions(ctx, userId, postId); // ["up"]
  * ```
+ *
+ * @see https://oss.vllnt.com/packages/convex-reactions
  */
 export class Reactions {
   private readonly allowedKinds: ReadonlySet<string> | undefined;
