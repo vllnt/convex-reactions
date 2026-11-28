@@ -87,6 +87,18 @@ commit_tree
 run "packed test file is denied" 1
 grep -q 'DENY  src/index.test.ts' <<< "$LAST_OUTPUT" || { echo "FAIL test path not denied" >&2; failures=$((failures + 1)); }
 
+# Module-flavoured spec files packed despite files field
+for ext in mts cts; do
+  rm -rf "$REPO/src"
+  mkdir -p "$REPO/src"
+  printf 'export {}\n' > "$REPO/src/index.ts"
+  printf 'test()\n' > "$REPO/src/index.spec.$ext"
+  write_pkg '{"name":"fixture-pack","version":"1.0.0","files":["dist","src"]}'
+  commit_tree
+  run "packed .spec.$ext file is denied" 1
+  grep -q "DENY  src/index.spec.$ext" <<< "$LAST_OUTPUT" || { echo "FAIL .spec.$ext path not denied" >&2; failures=$((failures + 1)); }
+done
+
 # Denylist hit inside dist
 rm -rf "$REPO/src"
 write_pkg '{"name":"fixture-pack","version":"1.0.0","files":["dist"]}'
