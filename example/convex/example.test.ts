@@ -270,6 +270,12 @@ describe("reactions — reactors (paginated)", () => {
     expect(result.page).toEqual([]);
   });
 
+  /**
+   * Seeding 1001 edges takes about 1001 mutations, and convex-test scans the
+   * table on each indexed read, so this test runs about 2 s on an idle machine
+   * and has exceeded the 5 s default on a loaded host. The explicit timeout keeps
+   * the full 1001-row range (the point of the test) without flaking.
+   */
   test("returns a whole reactive cursor range: endCursor ignores maximumRowsRead", async () => {
     const t = setup();
     for (let i = 0; i < 1001; i++) {
@@ -302,7 +308,7 @@ describe("reactions — reactors (paginated)", () => {
     expect(first.page).toHaveLength(1000);
     expect(range.page).toHaveLength(1001);
     expect(range.page.at(-1)?.authorRef).toBe("bounded-1000");
-  });
+  }, 30_000);
 });
 
 describe("reactions — myReactions", () => {
