@@ -52,8 +52,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `@latest` only from a `vX.Y.Z` tag on `main` through npm trusted publishing
   with provenance. CI now also type-checks the component and every test file and
   checks formatting.
-- `engines.node` raised to `>=20.19.0`, matching what the `convex` peer range
-  already requires.
+- `engines.node` raised from `>=18` to `>=20.0.0`, the floor the lowest
+  supported `convex` (1.45) declares.
 
 ### Documentation
 

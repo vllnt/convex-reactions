@@ -164,7 +164,9 @@ registers the component on a `convexTest(hostSchema, modules)` instance under
 `name`. Any host schema works. The entry is TypeScript source that references
 `vite/client` types and calls `import.meta.glob`, so the consuming app needs
 `convex-test`, `vitest`, `vite` (as a direct dev dependency) and
-`@edge-runtime/vm` (for Vitest `environment: "edge-runtime"`).
+`@edge-runtime/vm` (for Vitest `environment: "edge-runtime"`). Run the tests on
+the Node.js version your Vitest requires (Vitest 5 needs Node.js `^22.12.0`,
+`^24.0.0` or `>=26.0.0`).
 
 ## Tables
 

@@ -90,9 +90,9 @@ const slug = (heading) =>
  * of fence characters, so "```js" inside a block does not close it. A fence
  * indented 4 or more spaces outside a block fails: Markdown renders it as an
  * indented code block, so its example would escape the checks.
- * @param {string} text
+ * @param {string} text @param {string} file named in failures
  */
-function codeBlocks(text) {
+function codeBlocks(text, file) {
   /** @type {{ code: string, lang: string, line: number }[]} */
   const blocks = [];
   /** @type {{ fence: string, lang: string, line: number, lines: string[] } | undefined} */
@@ -103,7 +103,7 @@ function codeBlocks(text) {
       assert.doesNotMatch(
         line,
         /^ {4,}(?:`{3,}|~{3,})/u,
-        `line ${String(index + 1)}: indent code fences 3 spaces at most`,
+        `${file}:${String(index + 1)}: indent code fences 3 spaces at most`,
       );
       if (marker) {
         const [, fence = "", info = ""] = marker;
@@ -127,14 +127,14 @@ function codeBlocks(text) {
     });
     open = undefined;
   });
-  assert.equal(open, undefined, "unclosed code block");
+  assert.equal(open, undefined, `${file}: unclosed code block`);
   return blocks;
 }
 
-/** Lines outside code blocks with 1-based line numbers. @param {string} text */
-function linesOutsideCode(text) {
+/** Lines outside code blocks with 1-based line numbers. @param {string} text @param {string} file */
+function linesOutsideCode(text, file) {
   const inCode = new Set(
-    codeBlocks(text).flatMap(({ code, line }) =>
+    codeBlocks(text, file).flatMap(({ code, line }) =>
       Array.from(
         { length: code.split("\n").length + 2 },
         (_, offset) => line + offset,
@@ -147,11 +147,11 @@ function linesOutsideCode(text) {
     .filter(({ line }) => !inCode.has(line));
 }
 
-/** Heading anchors, skipping `#` lines in code blocks. @param {string} text */
-function anchors(text) {
+/** Heading anchors, skipping `#` lines in code blocks. @param {string} text @param {string} file */
+function anchors(text, file) {
   /** @type {Map<string, number>} */
   const seen = new Map();
-  const headings = linesOutsideCode(text).flatMap(
+  const headings = linesOutsideCode(text, file).flatMap(
     ({ content }) => /^#{1,6}\s+(.+)$/u.exec(content)?.slice(1) ?? [],
   );
   return new Set(
@@ -164,10 +164,10 @@ function anchors(text) {
   );
 }
 
-/** `##` sections outside code blocks. @param {string} text */
-function sections(text) {
+/** `##` sections outside code blocks. @param {string} text @param {string} file */
+function sections(text, file) {
   const lines = text.split("\n");
-  const heads = linesOutsideCode(text).filter(({ content }) =>
+  const heads = linesOutsideCode(text, file).filter(({ content }) =>
     content.startsWith("## "),
   );
   return heads.map((head, index) => ({
@@ -203,7 +203,7 @@ function checkStructure(readme, packageName) {
   const intro = readme.split("\n\n")[1] ?? "";
   const stops = intro.match(/[!.?](?=\s|$)/gu) ?? [];
   assert.ok(stops.length === 1 && /[!.?]$/u.test(intro), "title: one sentence");
-  const parts = sections(readme);
+  const parts = sections(readme, "README.md");
   assert.deepEqual(
     parts.map(({ name }) => name),
     SECTIONS,
@@ -254,8 +254,10 @@ function checkTop(readme, packageName) {
     install !== -1 && install < FIRST_LINES,
     `install command within the first ${String(FIRST_LINES)} lines`,
   );
-  const quick = section(sections(readme), "Quick start").line;
-  const example = codeBlocks(readme).find((block) => block.line > quick);
+  const quick = section(sections(readme, "README.md"), "Quick start").line;
+  const example = codeBlocks(readme, "README.md").find(
+    (block) => block.line > quick,
+  );
   assert.ok(
     example && example.line <= FIRST_LINES,
     `first example within the first ${String(FIRST_LINES)} lines`,
@@ -277,12 +279,12 @@ const TYPESCRIPT = /^(?:[cm]?ts|tsx|typescript)(?![\w-])/iu;
  */
 function checkCode(texts) {
   Object.entries(texts).forEach(([file, text]) => {
-    codeBlocks(text).forEach((block) => {
+    codeBlocks(text, file).forEach((block) => {
       assert.ok(block.lang, `${file}:${String(block.line)} has no language`);
     });
   });
   return ["README.md", "docs/API.md"].flatMap((file) =>
-    codeBlocks(String(texts[file]))
+    codeBlocks(String(texts[file]), file)
       .filter((block) => {
         const typescript = TYPESCRIPT.test(block.lang);
         assert.ok(
@@ -313,7 +315,8 @@ function checkLinks(root, texts) {
       const resolved = target ? join(dirname(here), target) : here;
       assert.ok(existsSync(resolved), `${file}: ${link} does not resolve`);
       if (anchor !== undefined) {
-        const has = anchors(readFileSync(resolved, "utf8")).has(anchor);
+        const linked = target ? join(dirname(file), target) : file;
+        const has = anchors(readFileSync(resolved, "utf8"), linked).has(anchor);
         assert.ok(has, `${file}: ${link} has no such anchor`);
       }
     });
@@ -495,7 +498,9 @@ function checkLlms(llms, name, description) {
     llms.split("\n").includes(`> ${description}`),
     "llms.txt: > <package.json description>",
   );
-  const when = sections(llms).find((part) => part.name === "When to use");
+  const when = sections(llms, "llms.txt").find(
+    (part) => part.name === "When to use",
+  );
   assert.ok(when, "llms.txt: ## When to use");
   checkWhenToUse(when.body, "llms.txt");
   assert.ok(llms.includes("](./docs/API.md)"), "llms.txt: link ./docs/API.md");
@@ -514,8 +519,8 @@ function checkLlms(llms, name, description) {
 function checkWording(texts, files) {
   Object.entries(texts).forEach(([file, text]) => {
     const related =
-      sections(text).find((part) => part.name === "Related packages")?.body ??
-      "";
+      sections(text, file).find((part) => part.name === "Related packages")
+        ?.body ?? "";
     const names = related.matchAll(/\[`?@vllnt\/([\w-]+)`?\]\(([^)]+)\)/gu);
     [...names].forEach(([, other = "", url]) => {
       const page = `${OSS}/packages/${other}`;
@@ -635,7 +640,7 @@ export function checkDocumentation(root, consumer) {
       : installedExports(consumer, metadata.name, keys);
   /** @type {Documented} */
   const documented = {
-    headings: anchors(reference),
+    headings: anchors(reference, "docs/API.md"),
     table: section(parts, "API")
       .body.split("\n")
       .filter((line) => line.startsWith("|"))

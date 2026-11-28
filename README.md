@@ -257,11 +257,13 @@ kinds and do not throw on empty strings.
   1000 on the first run of a page. A reactive re-run with an `endCursor` returns
   the whole range between its cursors, and Convex ignores `maximumRowsRead`
   there; only Convex transaction read limits apply. `usePaginatedQuery` sends
-  `endCursor` on those re-runs to keep loaded pages free of gaps and overlaps.
-  Only a caller that does not use `usePaginatedQuery` or other reactive
-  pagination should drop `endCursor` from `paginationOpts` in its own wrapper
-  before calling `reactors`; with reactive pagination, dropping it can show
-  duplicate or missing rows when reactions are added or removed.
+  `endCursor` when it splits a loaded page that grew (on `SplitRecommended` or
+  `SplitRequired`, or once a page holds more than twice `initialNumItems`), so
+  the two halves stay free of gaps and overlaps. Only a caller that does not
+  use `usePaginatedQuery` or other reactive pagination should drop `endCursor`
+  from `paginationOpts` in its own wrapper before calling `reactors`; with
+  reactive pagination, dropping it on a split page can show duplicate or
+  missing rows.
 - `react` is a toggle, not an idempotent retry operation: calling it twice with
   the same arguments removes the edge again. Use `unreact` for "ensure absent",
   and `hasReacted` before `react` for "ensure present".
@@ -292,8 +294,8 @@ kinds and do not throw on empty strings.
 - Peer dependency: `convex@^1.45.0`. The repository's tests run on the locked
   convex version (1.51); `pnpm test:package` type-checks and runs the packed
   package against convex 1.45.0.
-- Node.js 20.19 or later (`engines.node` `>=20.19.0`). convex 1.49 and newer
-  need Node.js 22 or later. CI runs Node.js 24.
+- Node.js 20 or later (`engines.node` `>=20.0.0`). convex 1.49 and newer need
+  Node.js 22 or later. CI runs Node.js 24.
 - ES modules only. Call the client from host Convex queries and mutations; the
   component's functions run in the default Convex runtime.
 - React: not applicable. The package is backend-only and has no `./react`
@@ -305,8 +307,10 @@ kinds and do not throw on empty strings.
 
 ## Testing
 
-Mount the component in your own `convex-test` suite with `register`. Use the
-Vitest settings from the `convex-test` docs (edge runtime, `convex-test` inlined):
+Mount the component in your own `convex-test` suite with `register`. Run the
+tests on the Node.js version your Vitest requires (Vitest 5 needs Node.js
+`^22.12.0`, `^24.0.0` or `>=26.0.0`). Use the Vitest settings from the
+`convex-test` docs (edge runtime, `convex-test` inlined):
 
 ```ts
 // vitest.config.mts
