@@ -52,6 +52,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `@latest` only from a `vX.Y.Z` tag on `main` through npm trusted publishing
   with provenance. CI now also type-checks the component and every test file and
   checks formatting.
+- `engines.node` raised to `>=20.19.0`, matching what the `convex` peer range
+  already requires.
 
 ### Documentation
 
@@ -62,9 +64,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   summary, when-to-use list and an Ecosystem block. The `package.json`
   description and keywords now name the problem and the stack. `pnpm lint` runs
   `scripts/check-documentation.mjs`, and the new `pnpm test:package` installs
-  the packed tarball, imports every entry point, and type-checks every README
-  and `docs/API.md` example against it on `convex` 1.45.0. Behavior is
-  unchanged.
+  the packed tarball, imports its runtime entry points, type-checks all of them,
+  and type-checks every README and `docs/API.md` example against it on `convex`
+  1.45.0. Behavior is unchanged.
 - The npm package now ships `docs/API.md`, `CHANGELOG.md`, and `llms.txt` next
   to `README.md`, so the docs under `node_modules/@vllnt/convex-reactions/`
   match the installed version. `llms.txt` links shipped files relatively and
@@ -77,8 +79,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   between the cursors and ignores `maximumRowsRead` (only its transaction read
   limits apply), so the README states the limit as `numItems` 1 to 1000.
   Behavior is unchanged.
-- README gains a self-contained "Testing your app" snippet; the error table
-  lists the new codes.
+- README `## Testing` section gains a self-contained `register` example; the
+  error table lists the new codes.
 - The npm `homepage` now points to
   <https://oss.vllnt.com/packages/convex-reactions>.
 

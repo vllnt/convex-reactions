@@ -256,9 +256,12 @@ kinds and do not throw on empty strings.
 - `reactors` takes `numItems` from 1 to 1000. `maximumRowsRead` is capped at
   1000 on the first run of a page. A reactive re-run with an `endCursor` returns
   the whole range between its cursors, and Convex ignores `maximumRowsRead`
-  there; only Convex transaction read limits apply. A host that does not need
-  reactive pagination can drop `endCursor` from `paginationOpts` in its own
-  wrapper before calling `reactors`.
+  there; only Convex transaction read limits apply. `usePaginatedQuery` sends
+  `endCursor` on those re-runs to keep loaded pages free of gaps and overlaps.
+  Only a caller that does not use `usePaginatedQuery` or other reactive
+  pagination should drop `endCursor` from `paginationOpts` in its own wrapper
+  before calling `reactors`; with reactive pagination, dropping it can show
+  duplicate or missing rows when reactions are added or removed.
 - `react` is a toggle, not an idempotent retry operation: calling it twice with
   the same arguments removes the edge again. Use `unreact` for "ensure absent",
   and `hasReacted` before `react` for "ensure present".
@@ -289,8 +292,8 @@ kinds and do not throw on empty strings.
 - Peer dependency: `convex@^1.45.0`. The repository's tests run on the locked
   convex version (1.51); `pnpm test:package` type-checks and runs the packed
   package against convex 1.45.0.
-- `package.json` `engines.node` is `>=18`. convex itself requires Node.js 20 or
-  later (1.45) and 22 or later (1.49 and newer).
+- Node.js 20.19 or later (`engines.node` `>=20.19.0`). convex 1.49 and newer
+  need Node.js 22 or later. CI runs Node.js 24.
 - ES modules only. Call the client from host Convex queries and mutations; the
   component's functions run in the default Convex runtime.
 - React: not applicable. The package is backend-only and has no `./react`
@@ -377,8 +380,8 @@ Report vulnerabilities as described in
 
 ## Related packages
 
-None. This package has no dependency, shared test or example with another
-package.
+None. This package has no runtime or peer dependency, shared test or example
+with another @vllnt package.
 
 ## Contributing
 
