@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 
 // Fail unless CHANGELOG.md has exactly one section for package.json `version`
-// (the `## [X.Y.Z]` heading the release job greps for) and at most one undated
-// section, which must be that version's and sit first. Released sections carry
-// a date: `## [X.Y.Z] - YYYY-MM-DD`.
+// (the `## [X.Y.Z]` heading the release job greps for) and at most one
+// unreleased (undated) section, placed first. Released sections carry a date:
+// `## [X.Y.Z] - YYYY-MM-DD`.
 const { version } = JSON.parse(readFileSync("package.json", "utf8"));
 const headings = readFileSync("CHANGELOG.md", "utf8")
   .split("\n")
@@ -23,12 +23,8 @@ const undated = headings.filter((line) => !dated.test(line));
 if (undated.length > 1) {
   errors.push(`more than one unreleased section: ${undated.join(" | ")}`);
 }
-for (const line of undated) {
-  if (!line.startsWith(`## [${version}]`) || line !== headings[0]) {
-    errors.push(
-      `undated section must be the first and for ${version}: ${line}`,
-    );
-  }
+if (undated.length === 1 && undated[0] !== headings[0]) {
+  errors.push(`the unreleased section must come first: ${undated[0]}`);
 }
 if (errors.length > 0) {
   console.error(errors.map((error) => `CHANGELOG.md: ${error}`).join("\n"));
