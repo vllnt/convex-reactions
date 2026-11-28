@@ -34,23 +34,32 @@ src/
 │   ├── index.ts           # Reactions class (consumer-facing API)
 │   └── types.ts           # public TypeScript interfaces
 └── component/
-    ├── schema.ts           # sandboxed table: reactions {authorRef, resourceRef, kind, createdAt}
+    ├── schema.ts           # sandboxed tables: reactions (edges), reactionCounts (per-kind tallies)
     ├── convex.config.ts    # defineComponent("reactions")
     ├── mutations.ts        # react (toggle), unreact (idempotent remove)
     ├── queries.ts          # counts, hasReacted, myReactions, reactors
+    ├── tally.ts            # adjustCount (keeps tallies in step), tallyEdges (legacy edge count)
     └── validators.ts       # shared validators (reactionView, kindCount, reactResult)
 ```
 
-Sandboxed table: `reactions` — indexed `by_author_resource_kind` (uniqueness /
-toggle / dedup key), `by_resource_kind` (per-resource counts + reactor listing),
-and `by_author_resource` (a subject's own reactions). No host tables are
-touched. The refs and `kind` are opaque to the component.
+Sandboxed tables:
+
+- `reactions` — one row per edge `{ authorRef, resourceRef, kind, createdAt }`,
+  indexed `by_author_resource_kind` (uniqueness / toggle / dedup key; its
+  `(authorRef, resourceRef)` prefix serves `myReactions`) and `by_resource_kind`
+  (`resourceRef`, `kind`, `createdAt`: reactor listing and the legacy edge
+  count).
+- `reactionCounts` — one tally row per `{ resourceRef, kind, count }`, indexed
+  `by_resource_kind` (`resourceRef`, `kind`); `counts` reads it.
+
+No host tables are touched. The refs and `kind` are opaque to the component.
 
 ## Ownership boundary
 
 **Component owns:**
 
 - The reaction edges (`reactions` table) — toggle, remove, count, list
+- The per-kind tallies (`reactionCounts` table), kept in step with the edges
 - The uniqueness invariant: at most one `(authorRef, resourceRef, kind)` edge
   per subject, enforced inside the mutation transaction
 - Server-sourced time — `Date.now()` inside `react` stamps `createdAt`; no
@@ -98,11 +107,15 @@ the host namespaces refs itself, or mounts a second instance
   enforced in the `Reactions` client before the component is called — the
   component itself stays vocabulary-agnostic (any `kind` is a valid edge).
 
-- **Counts by index scan, no aggregate child (yet):** `counts` reads a
-  resource's edges via the `by_resource_kind` index and tallies in memory —
-  minimal and correct for the 0.1 surface. A future version composing
-  `@convex-dev/aggregate` for O(1) counts is the documented growth path (see
-  IDEAS).
+- **Stored per-kind tallies, no aggregate child:** `react` and `unreact` adjust
+  one `reactionCounts` row per `(resourceRef, kind)` in the same transaction as
+  the edge write (`adjustCount` in `tally.ts`), and delete it when its count
+  reaches zero, so `counts` reads O(kinds) rows instead of every edge. A
+  resource whose edges predate the table has no tally rows; writes never start a
+  tally for it (no migration, no edge scan on write), and `counts` keeps
+  counting its edges via `by_resource_kind` (`tallyEdges`) until all its edges
+  are removed. Trade-off: every write on a resource updates its
+  `(resource, kind)` row, so very high write rates on one row contend.
 
 - **Backend-only (no `./react` entry):** a reaction tally / reactor list is an
   ordinary reactive `useQuery` over the host's own re-exported `counts` /
@@ -125,8 +138,8 @@ the host namespaces refs itself, or mounts a second instance
 | Changed                                                                      | Update in the same commit                                                                                                                                  |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Public API (react/unreact/counts/hasReacted/myReactions/reactors signatures) | README API Reference table, `docs/API.md`, `llms.txt` context                                                                                              |
-| Config options / defaults (allowedKinds)                                     | README API Reference, `docs/API.md` constructor section                                                                                                    |
-| Schema / table / indexes                                                     | README Architecture, `docs/API.md`                                                                                                                         |
+| Config options / defaults (allowedKinds)                                     | README Options and limitations, `docs/API.md` `## Client` section                                                                                          |
+| Schema / table / indexes                                                     | Architecture above, `docs/API.md` `## Tables` (`pnpm check:docs` fails on a missing or unknown table or index)                                             |
 | Error model                                                                  | `docs/API.md` → `## Error codes` section                                                                                                                   |
 | `peerDependencies.convex` version                                            | `llms.txt` context line (`convex@^X.Y.Z`), `docs/API.md` Compatibility line, README Installation peer note                                                 |
 | Uniqueness / toggle semantics                                                | `docs/API.md` mutation sections, Key design decisions above                                                                                                |

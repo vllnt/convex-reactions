@@ -96,14 +96,14 @@ export const tally = internalQuery({
 
 ## API Reference
 
-| Method                                             | Kind     | Result                                                     |
-| -------------------------------------------------- | -------- | ---------------------------------------------------------- |
-| `react(ctx, authorRef, resourceRef, kind)`         | mutation | `{ reacted, action }` (`action`: `"added" \| "removed"`)   |
-| `unreact(ctx, authorRef, resourceRef, kind)`       | mutation | `boolean` (true if an edge was removed)                    |
-| `counts(ctx, resourceRef)`                         | query    | `{ kind, count }[]` (sorted by kind)                       |
-| `hasReacted(ctx, authorRef, resourceRef, kind)`    | query    | `boolean`                                                  |
-| `myReactions(ctx, authorRef, resourceRef)`         | query    | `string[]` (kinds the subject placed)                      |
-| `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; 1 to 1000 items per page |
+| Method                                             | Kind     | Result                                                   |
+| -------------------------------------------------- | -------- | -------------------------------------------------------- |
+| `react(ctx, authorRef, resourceRef, kind)`         | mutation | `{ reacted, action }` (`action`: `"added" \| "removed"`) |
+| `unreact(ctx, authorRef, resourceRef, kind)`       | mutation | `boolean` (true if an edge was removed)                  |
+| `counts(ctx, resourceRef)`                         | query    | `{ kind, count }[]` (sorted by kind)                     |
+| `hasReacted(ctx, authorRef, resourceRef, kind)`    | query    | `boolean`                                                |
+| `myReactions(ctx, authorRef, resourceRef)`         | query    | `string[]` (kinds the subject placed)                    |
+| `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; `numItems` 1 to 1000   |
 
 Invalid numeric pagination options throw coded `ConvexError`
 `INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw
