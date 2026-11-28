@@ -54,6 +54,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   checks formatting.
 - `engines.node` raised from `>=18` to `>=20.0.0`, the floor the lowest
   supported `convex` (1.45) declares.
+- The seven-day release-age gate moved from the `package.json` `pnpm` field,
+  which pnpm 10 ignores, to `pnpm-workspace.yaml`, so installs (including the
+  package test's consumer) now enforce it; Renovate waits seven days too, except
+  for `@vllnt/*`.
 
 ### Documentation
 
