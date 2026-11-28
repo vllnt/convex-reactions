@@ -1,5 +1,5 @@
 import { defineApp } from "convex/server";
-import component from "../../src/component/convex.config";
+import component from "../../src/component/convex.config.js";
 
 const app = defineApp();
 // Default mount, plus a second named mount — proves the component is mount-safe

@@ -1,8 +1,8 @@
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
-import schema from "./schema";
-import { register } from "../../src/test";
+import { api } from "./_generated/api.js";
+import schema from "./schema.js";
+import { register } from "../../src/test.js";
 
 const modules = import.meta.glob("./**/*.ts");
 
@@ -67,7 +67,7 @@ describe("reactions — react (toggle)", () => {
       kind: "up",
       paginationOpts: { cursor: null, numItems: 10 },
     });
-    expect(page.page[0].createdAt).toBe(5_000);
+    expect(page.page.map((row) => row.createdAt)).toEqual([5_000]);
   });
 
   test("one subject can hold different kinds on the same resource", async () => {
