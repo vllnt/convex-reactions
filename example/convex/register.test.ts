@@ -25,7 +25,10 @@ test("register mounts on a host-schema convexTest under the default and a named 
     resourceRef: "post1",
     kind: "like",
   });
-  await t.mutation(api.example.voteUp, { authorRef: "u1", resourceRef: "post1" });
+  await t.mutation(api.example.voteUp, {
+    authorRef: "u1",
+    resourceRef: "post1",
+  });
 
   expect(await t.query(api.example.getBookmark, { resourceRef: "post1" })).toBe(
     "host",
@@ -33,7 +36,7 @@ test("register mounts on a host-schema convexTest under the default and a named 
   expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual([
     { kind: "like", count: 1 },
   ]);
-  expect(await t.query(api.example.voteCounts, { resourceRef: "post1" })).toEqual(
-    [{ kind: "up", count: 1 }],
-  );
+  expect(
+    await t.query(api.example.voteCounts, { resourceRef: "post1" }),
+  ).toEqual([{ kind: "up", count: 1 }]);
 });

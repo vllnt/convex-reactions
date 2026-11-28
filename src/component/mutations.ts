@@ -3,7 +3,6 @@ import { mutation } from "./_generated/server.js";
 import { reactResult } from "./validators.js";
 import { adjustCount } from "./tally.js";
 
-
 /**
  * Reject empty refs and kind. An empty ref or kind is never a valid edge key and
  * would silently create rows no real subject, resource, or kind can address.

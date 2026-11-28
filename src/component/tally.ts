@@ -47,7 +47,9 @@ export async function adjustCount(
     tracked === null
       ? await ctx.db
           .query("reactions")
-          .withIndex("by_resource_kind", (q) => q.eq("resourceRef", resourceRef))
+          .withIndex("by_resource_kind", (q) =>
+            q.eq("resourceRef", resourceRef),
+          )
           .first()
       : null;
   if (legacyEdge === null) {

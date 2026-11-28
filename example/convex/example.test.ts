@@ -392,9 +392,9 @@ describe("reactions — mount-safety (independent named mount)", () => {
       resourceRef: "post1",
     });
     // default mount holds the "like"; the votes mount holds the "up"
-    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual([
-      { kind: "like", count: 1 },
-    ]);
+    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual(
+      [{ kind: "like", count: 1 }],
+    );
     expect(
       await t.query(api.example.voteCounts, { resourceRef: "post1" }),
     ).toEqual([{ kind: "up", count: 1 }]);
@@ -418,9 +418,9 @@ describe("reactions — host/component table isolation", () => {
       await t.query(api.example.getBookmark, { resourceRef: "post1" }),
     ).toBe("read later");
     // the component reaction is unaffected
-    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual([
-      { kind: "like", count: 1 },
-    ]);
+    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual(
+      [{ kind: "like", count: 1 }],
+    );
     // a bookmark for a resource with no reactions is fine — fully decoupled
     await t.mutation(api.example.addBookmark, {
       resourceRef: "orphan",
@@ -429,9 +429,9 @@ describe("reactions — host/component table isolation", () => {
     expect(
       await t.query(api.example.getBookmark, { resourceRef: "orphan" }),
     ).toBe("x");
-    expect(await t.query(api.example.counts, { resourceRef: "orphan" })).toEqual(
-      [],
-    );
+    expect(
+      await t.query(api.example.counts, { resourceRef: "orphan" }),
+    ).toEqual([]);
   });
 });
 

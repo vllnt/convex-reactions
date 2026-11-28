@@ -40,7 +40,11 @@ const paginated = v.object({
   continueCursor: v.string(),
   splitCursor: v.optional(v.union(v.string(), v.null())),
   pageStatus: v.optional(
-    v.union(v.literal("SplitRecommended"), v.literal("SplitRequired"), v.null()),
+    v.union(
+      v.literal("SplitRecommended"),
+      v.literal("SplitRequired"),
+      v.null(),
+    ),
   ),
 });
 
