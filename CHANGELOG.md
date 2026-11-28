@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.1] - Unreleased
 
+### Upgrading
+
+- Downgrading to 0.1.0 is not supported once 0.1.1 has written `reactionCounts`
+  tally rows: 0.1.0 writes edges without updating tallies, so upgrading again
+  would leave stale counts.
+- Edges with an empty `authorRef`, `resourceRef`, or `kind` stored under 0.1.0
+  can no longer be removed through `react` or `unreact` (they now throw
+  `INVALID_REF` or `INVALID_KIND` first). If you have such rows, remove them
+  yourself; a resource that holds one keeps counting from edges.
+
 ### Fixed
 
 - `react` and `unreact` now throw `ConvexError` `INVALID_REF` for an empty
@@ -32,8 +42,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `react`/`unreact`).
 - Development and test toolchain: pnpm 10 with a seven-day release-age gate,
   `convex` 1.51, `convex-test` 0.0.73, Vitest 5.1.1, ESLint 10, and
-  `@vllnt/typescript` 3 (stricter compiler flags; the built JavaScript and
-  `.d.ts` output is unchanged). The `convex` peer range stays `^1.45.0`.
+  `@vllnt/typescript` 3 (stricter type-check flags for this repo's own build;
+  emitted JavaScript and `.d.ts` files are identical to a build with the 2.0.0
+  flags). The `convex` peer range stays `^1.45.0`.
 - Pin GitHub Actions to commit SHAs, scope workflow permissions, and publish
   `@latest` only from a `vX.Y.Z` tag on `main` through npm trusted publishing
   with provenance. CI now also type-checks the component and every test file and
@@ -55,8 +66,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Behavior is unchanged.
 - README gains a self-contained "Testing your app" snippet; the error table
   lists the new codes.
-- Add tests that assert counts, reactor rows, and `hasReacted` agree under
-  double react, concurrent toggles, and removal of a non-existent reaction.
+- The npm `homepage` now points to
+  <https://oss.vllnt.com/packages/convex-reactions>.
 
 ## [0.1.0] - 2026-09-01
 

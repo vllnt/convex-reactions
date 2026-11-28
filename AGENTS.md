@@ -9,6 +9,7 @@ override what you may have learned about Convex from training data.
 
 Convex agent skills for common tasks can be installed by running
 `npx convex ai-files install`.
+
 <!-- convex-ai-end -->
 
 # @vllnt/convex-reactions
@@ -139,12 +140,17 @@ the host namespaces refs itself, or mounts a second instance
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Public API (react/unreact/counts/hasReacted/myReactions/reactors signatures) | README API Reference table, `docs/API.md`, `llms.txt` context                                                                                              |
 | Config options / defaults (allowedKinds)                                     | README Options and limitations, `docs/API.md` `## Client` section                                                                                          |
-| Schema / table / indexes                                                     | Architecture above, `docs/API.md` `## Tables` (`pnpm check:docs` fails on a missing or unknown table or index)                                             |
+| Schema / table / indexes                                                     | Architecture above, `docs/API.md` `## Tables` (checked by `pnpm check:docs`, see below)                                                                    |
 | Error model                                                                  | `docs/API.md` → `## Error codes` section                                                                                                                   |
 | `peerDependencies.convex` version                                            | `llms.txt` context line (`convex@^X.Y.Z`), `docs/API.md` Compatibility line, README Installation peer note                                                 |
 | Uniqueness / toggle semantics                                                | `docs/API.md` mutation sections, Key design decisions above                                                                                                |
 | Shipped docs (`package.json` `files`)                                        | `required` list in `scripts/check-package-files.mjs`, `paths` in `.github/workflows/publish.yml`; relative `./` links in `llms.txt` only for shipped files |
 | Any change                                                                   | `pnpm generate:llms` to validate the `llms.txt` index (it generates nothing)                                                                               |
+
+`pnpm check:docs` reads `src/component/schema.ts` and fails when AGENTS.md or
+`docs/API.md` does not mention every table and index name in backticks, or when
+AGENTS.md, `docs/API.md`, README.md, or `llms.txt` names a backticked `by_*`
+index the schema does not define. It does not flag unknown table names.
 
 Grep old values before committing (e.g. after a `peerDependencies.convex` bump,
 `git grep "1.41.0"` → only the new range survives).
