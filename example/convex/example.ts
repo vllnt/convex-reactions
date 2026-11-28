@@ -1,8 +1,8 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
-import { components } from "./_generated/api";
-import { mutation, query } from "./_generated/server";
-import { Reactions } from "../../src/client";
+import { components } from "./_generated/api.js";
+import { mutation, query } from "./_generated/server.js";
+import { Reactions } from "../../src/client/index.js";
 
 /**
  * Host-app wrappers. The host owns auth: resolve identity here, then pass opaque
@@ -40,7 +40,11 @@ const paginated = v.object({
   continueCursor: v.string(),
   splitCursor: v.optional(v.union(v.string(), v.null())),
   pageStatus: v.optional(
-    v.union(v.literal("SplitRecommended"), v.literal("SplitRequired"), v.null()),
+    v.union(
+      v.literal("SplitRecommended"),
+      v.literal("SplitRequired"),
+      v.null(),
+    ),
   ),
 });
 

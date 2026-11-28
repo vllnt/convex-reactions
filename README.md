@@ -96,14 +96,14 @@ export const tally = internalQuery({
 
 ## API Reference
 
-| Method                                             | Kind     | Result                                                     |
-| -------------------------------------------------- | -------- | ---------------------------------------------------------- |
-| `react(ctx, authorRef, resourceRef, kind)`         | mutation | `{ reacted, action }` (`action`: `"added" \| "removed"`)   |
-| `unreact(ctx, authorRef, resourceRef, kind)`       | mutation | `boolean` (true if an edge was removed)                    |
-| `counts(ctx, resourceRef)`                         | query    | `{ kind, count }[]` (sorted by kind)                       |
-| `hasReacted(ctx, authorRef, resourceRef, kind)`    | query    | `boolean`                                                  |
-| `myReactions(ctx, authorRef, resourceRef)`         | query    | `string[]` (kinds the subject placed)                      |
-| `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; 1 to 1000 items per page |
+| Method                                             | Kind     | Result                                                   |
+| -------------------------------------------------- | -------- | -------------------------------------------------------- |
+| `react(ctx, authorRef, resourceRef, kind)`         | mutation | `{ reacted, action }` (`action`: `"added" \| "removed"`) |
+| `unreact(ctx, authorRef, resourceRef, kind)`       | mutation | `boolean` (true if an edge was removed)                  |
+| `counts(ctx, resourceRef)`                         | query    | `{ kind, count }[]` (sorted by kind)                     |
+| `hasReacted(ctx, authorRef, resourceRef, kind)`    | query    | `boolean`                                                |
+| `myReactions(ctx, authorRef, resourceRef)`         | query    | `string[]` (kinds the subject placed)                    |
+| `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; `numItems` 1 to 1000   |
 
 Invalid numeric pagination options throw coded `ConvexError`
 `INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw
@@ -119,10 +119,11 @@ Full reference: [docs/API.md](docs/API.md).
   freeform kinds; an empty list rejects every write kind.
 - `counts` reads one stored tally per kind, kept in step by `react` and
   `unreact`, for every resource whose first reaction came after tallies existed.
-  A resource that already had reactions before then keeps being counted from
-  its edges (subject to Convex read limits) until all its edges are removed. Every write on a resource updates its tally row, so very high write rates
-  on one `(resource, kind)` contend on that row. `myReactions` collects the
-  subject's edges on the resource.
+  A resource that already had reactions before then keeps being counted from its
+  edges (subject to Convex read limits) until all its edges are removed. Every
+  write on a resource updates its tally row, so very high write rates on one
+  `(resource, kind)` contend on that row. `myReactions` collects the subject's
+  edges on the resource.
 - `react` is a toggle, not an idempotent retry operation: calling twice removes
   the edge. Use `unreact` to ensure absence.
 - Mount another isolated instance with `app.use(reactions, { name: "votes" })`
@@ -172,8 +173,9 @@ register(t);
 
 ## Documentation
 
-[API reference](docs/API.md) · [LLM index](llms.txt) ·
-[Changelog](CHANGELOG.md) · [Security policy](https://github.com/vllnt/convex-reactions/blob/main/SECURITY.md)
+[API reference](docs/API.md) · [LLM index](llms.txt) · [Changelog](CHANGELOG.md)
+·
+[Security policy](https://github.com/vllnt/convex-reactions/blob/main/SECURITY.md)
 
 `llms.txt` is the maintained discovery index. `pnpm generate:llms` checks its
 heading and local links without generating a source bundle.
@@ -198,7 +200,8 @@ TypeScript source in `src/`. Read them before writing code.
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/vllnt/convex-reactions/blob/main/CONTRIBUTING.md).
+See
+[CONTRIBUTING.md](https://github.com/vllnt/convex-reactions/blob/main/CONTRIBUTING.md).
 
 ## Author
 

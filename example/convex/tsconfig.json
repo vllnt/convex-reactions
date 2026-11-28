@@ -6,11 +6,6 @@
     "rootDir": "../..",
     "noEmit": true
   },
-  "include": [
-    "./**/*"
-  ],
-  "exclude": [
-    "./_generated",
-    "./**/*.test.ts"
-  ]
+  "include": ["./**/*"],
+  "exclude": ["./_generated", "./**/*.test.ts"]
 }

@@ -1,7 +1,14 @@
 import convex from "@vllnt/eslint-config/convex";
 
 export default [
-  { ignores: ["example/**", "dist/**", "src/component/_generated/**", "coverage/**"] },
+  {
+    ignores: [
+      "example/**",
+      "dist/**",
+      "src/component/_generated/**",
+      "coverage/**",
+    ],
+  },
   ...convex,
   // Exempt config, validator, and schema files from strict naming rules
   {

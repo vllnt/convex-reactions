@@ -1,8 +1,8 @@
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
-import schema from "./schema";
-import { register } from "../../src/test";
+import { api } from "./_generated/api.js";
+import schema from "./schema.js";
+import { register } from "../../src/test.js";
 
 const modules = import.meta.glob("./**/*.ts");
 
@@ -67,7 +67,7 @@ describe("reactions — react (toggle)", () => {
       kind: "up",
       paginationOpts: { cursor: null, numItems: 10 },
     });
-    expect(page.page[0].createdAt).toBe(5_000);
+    expect(page.page.map((row) => row.createdAt)).toEqual([5_000]);
   });
 
   test("one subject can hold different kinds on the same resource", async () => {
@@ -270,6 +270,12 @@ describe("reactions — reactors (paginated)", () => {
     expect(result.page).toEqual([]);
   });
 
+  /**
+   * Seeding 1001 edges takes about 1001 mutations, and convex-test scans the
+   * table on each indexed read, so this test runs about 2 s on an idle machine
+   * and has exceeded the 5 s default on a loaded host. The explicit timeout keeps
+   * the full 1001-row range (the point of the test) without flaking.
+   */
   test("returns a whole reactive cursor range: endCursor ignores maximumRowsRead", async () => {
     const t = setup();
     for (let i = 0; i < 1001; i++) {
@@ -302,7 +308,7 @@ describe("reactions — reactors (paginated)", () => {
     expect(first.page).toHaveLength(1000);
     expect(range.page).toHaveLength(1001);
     expect(range.page.at(-1)?.authorRef).toBe("bounded-1000");
-  });
+  }, 30_000);
 });
 
 describe("reactions — myReactions", () => {
@@ -386,9 +392,9 @@ describe("reactions — mount-safety (independent named mount)", () => {
       resourceRef: "post1",
     });
     // default mount holds the "like"; the votes mount holds the "up"
-    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual([
-      { kind: "like", count: 1 },
-    ]);
+    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual(
+      [{ kind: "like", count: 1 }],
+    );
     expect(
       await t.query(api.example.voteCounts, { resourceRef: "post1" }),
     ).toEqual([{ kind: "up", count: 1 }]);
@@ -412,9 +418,9 @@ describe("reactions — host/component table isolation", () => {
       await t.query(api.example.getBookmark, { resourceRef: "post1" }),
     ).toBe("read later");
     // the component reaction is unaffected
-    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual([
-      { kind: "like", count: 1 },
-    ]);
+    expect(await t.query(api.example.counts, { resourceRef: "post1" })).toEqual(
+      [{ kind: "like", count: 1 }],
+    );
     // a bookmark for a resource with no reactions is fine — fully decoupled
     await t.mutation(api.example.addBookmark, {
       resourceRef: "orphan",
@@ -423,9 +429,9 @@ describe("reactions — host/component table isolation", () => {
     expect(
       await t.query(api.example.getBookmark, { resourceRef: "orphan" }),
     ).toBe("x");
-    expect(await t.query(api.example.counts, { resourceRef: "orphan" })).toEqual(
-      [],
-    );
+    expect(
+      await t.query(api.example.counts, { resourceRef: "orphan" }),
+    ).toEqual([]);
   });
 });
 

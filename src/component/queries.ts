@@ -31,7 +31,8 @@ function boundedPaginationOptions(
   ) {
     throw new ConvexError({
       code: "INVALID_PAGE_SIZE",
-      message: "paginationOpts.maximumRowsRead must be a positive finite integer",
+      message:
+        "paginationOpts.maximumRowsRead must be a positive finite integer",
     });
   }
   return {
@@ -56,15 +57,19 @@ export const counts = query({
   handler: async (ctx, args) => {
     const tallies = await ctx.db
       .query("reactionCounts")
-      .withIndex("by_resource_kind", (q) => q.eq("resourceRef", args.resourceRef))
+      .withIndex("by_resource_kind", (q) =>
+        q.eq("resourceRef", args.resourceRef),
+      )
       .collect();
     const rows =
       tallies.length > 0
         ? tallies
-        : [...(await tallyEdges(ctx, args.resourceRef))].map(([kind, count]) => ({
-            kind,
-            count,
-          }));
+        : [...(await tallyEdges(ctx, args.resourceRef))].map(
+            ([kind, count]) => ({
+              kind,
+              count,
+            }),
+          );
     // Sort by kind for a stable, deterministic order. `localeCompare` is a
     // single expression (no comparator branch), so coverage stays exact.
     return rows

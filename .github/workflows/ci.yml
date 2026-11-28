@@ -29,6 +29,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - name: Test the package contents check
+        run: bash scripts/test-check-package-contents.sh
 
   typecheck:
     name: Typecheck
