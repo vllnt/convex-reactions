@@ -12,6 +12,14 @@ Convex agent skills for common tasks can be installed by running
 
 <!-- convex-ai-end -->
 
+That guidelines file is generated and not committed (`.gitignore` ignores
+`example/convex/_generated/ai/`), so a fresh clone lacks it. Create it with
+`curl -fsSL --create-dirs -o example/convex/_generated/ai/guidelines.md https://version.convex.dev/v1/guidelines`
+(network, no deployment). That is the download
+`pnpm exec convex ai-files install` does, but that command also installs agent
+skills and writes a `CLAUDE.md`, which `pnpm check:agents` rejects. If the
+download fails, use https://docs.convex.dev or proceed without the file.
+
 # @vllnt/convex-reactions
 
 Reactions, votes, and likes on any resource, as a Convex component. A reaction
