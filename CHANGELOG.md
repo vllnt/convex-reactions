@@ -4,7 +4,21 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.1] - Unreleased
+
+### Fixed
+
+- `react` and `unreact` now throw `ConvexError` `INVALID_REF` for an empty
+  `authorRef` or `resourceRef` and `INVALID_KIND` for an empty `kind`, instead
+  of storing an edge no real subject, resource, or kind can address. Previously
+  accepted input that could never be valid.
+- `@vllnt/convex-reactions/test` now type-checks for consumers using
+  `moduleResolution` `nodenext` as well as `bundler` (explicit `.js` relative
+  imports, Vite client types reference).
+- `register(t)` from `@vllnt/convex-reactions/test` accepts a `convexTest`
+  instance built from the host app's own schema; it was typed for the
+  component's schema only, so a host schema with its own tables failed to
+  type-check (TS2345). No runtime change.
 
 ### Changed
 
@@ -16,10 +30,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `myReactions` uses the `by_author_resource_kind` prefix; the redundant
   `by_author_resource` index is removed (one less index write per
   `react`/`unreact`).
-- Development and test toolchain: `convex` 1.51, `convex-test` 0.0.73, Vitest
-  5.1.1, ESLint 10, and `@vllnt/typescript` 3 (stricter compiler flags; the
-  built JavaScript and `.d.ts` output is unchanged). The `convex` peer range
-  stays `^1.45.0`.
+- Development and test toolchain: pnpm 10 with a seven-day release-age gate,
+  `convex` 1.51, `convex-test` 0.0.73, Vitest 5.1.1, ESLint 10, and
+  `@vllnt/typescript` 3 (stricter compiler flags; the built JavaScript and
+  `.d.ts` output is unchanged). The `convex` peer range stays `^1.45.0`.
+- Pin GitHub Actions to commit SHAs, scope workflow permissions, and publish
+  `@latest` only from a `vX.Y.Z` tag on `main` through npm trusted publishing
+  with provenance. CI now also type-checks the component and every test file and
+  checks formatting.
 
 ### Documentation
 
@@ -33,30 +51,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `reactors` docs no longer claim the 1000-row `maximumRowsRead` cap covers
   reactive cursor ranges: with an `endCursor`, Convex returns the whole range
   between the cursors and ignores `maximumRowsRead` (only its transaction read
-  limits apply). Behavior is unchanged.
-
-## [0.1.1] - Unreleased
-
-### Fixed
-
-- `react` and `unreact` now throw `ConvexError` `INVALID_REF` for an empty
-  `authorRef` or `resourceRef` and `INVALID_KIND` for an empty `kind`, instead
-  of storing an edge no real subject, resource, or kind can address. Previously
-  accepted input that could never be valid.
-- `@vllnt/convex-reactions/test` now type-checks for consumers using
-  `moduleResolution` `nodenext` as well as `bundler` (explicit `.js` relative
-  imports, Vite client types reference).
-
-### Changed
-
-- Pin GitHub Actions to commit SHAs, scope workflow permissions, and publish
-  `@latest` only from a `vX.Y.Z` tag on `main` through npm trusted publishing
-  with provenance.
-- Adopt pnpm 10 with a seven-day release-age gate; update `convex-test` to
-  `^0.0.65`.
-
-### Documentation
-
+  limits apply), so the README states the limit as `numItems` 1 to 1000.
+  Behavior is unchanged.
 - README gains a self-contained "Testing your app" snippet; the error table
   lists the new codes.
 - Add tests that assert counts, reactor rows, and `hasReacted` agree under
