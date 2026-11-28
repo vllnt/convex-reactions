@@ -270,7 +270,7 @@ describe("reactions — reactors (paginated)", () => {
     expect(result.page).toEqual([]);
   });
 
-  test("caps an explicit reactive cursor range at 1000 rows", async () => {
+  test("returns a whole reactive cursor range: endCursor ignores maximumRowsRead", async () => {
     const t = setup();
     for (let i = 0; i < 1001; i++) {
       await t.mutation(api.example.react, {
@@ -289,7 +289,7 @@ describe("reactions — reactors (paginated)", () => {
       kind: "up",
       paginationOpts: { cursor: first.continueCursor, numItems: 1 },
     });
-    const bounded = await t.query(api.example.reactors, {
+    const range = await t.query(api.example.reactors, {
       resourceRef: "bounded-post",
       kind: "up",
       paginationOpts: {
@@ -299,7 +299,9 @@ describe("reactions — reactors (paginated)", () => {
         maximumRowsRead: 5000,
       },
     });
-    expect(bounded.page).toHaveLength(1000);
+    expect(first.page).toHaveLength(1000);
+    expect(range.page).toHaveLength(1001);
+    expect(range.page.at(-1)?.authorRef).toBe("bounded-1000");
   });
 });
 

@@ -32,8 +32,9 @@ concurrency.
   sorted by kind; no reactions returns `[]`.
 - **List reactors** — `reactors(resourceRef, kind, paginationOpts)` pages who
   reacted with one kind, oldest first. `numItems` must be an integer from 1
-  through 1000 and `maximumRowsRead` is capped at 1000, including reactive
-  cursor ranges.
+  through 1000 and `maximumRowsRead` is capped at 1000. A reactive re-run with
+  an `endCursor` returns the whole range between its cursors: Convex ignores
+  `maximumRowsRead` there, and only its transaction read limits apply.
 - **Per-subject state** — `hasReacted` and `myReactions` give the host the
   subject's own reaction state for rendering controls.
 - **Configurable vocabulary** — `allowedKinds` pins the reaction set
@@ -95,14 +96,14 @@ export const tally = internalQuery({
 
 ## API Reference
 
-| Method                                             | Kind     | Result                                                      |
-| -------------------------------------------------- | -------- | ----------------------------------------------------------- |
-| `react(ctx, authorRef, resourceRef, kind)`         | mutation | `{ reacted, action }` (`action`: `"added" \| "removed"`)    |
-| `unreact(ctx, authorRef, resourceRef, kind)`       | mutation | `boolean` (true if an edge was removed)                     |
-| `counts(ctx, resourceRef)`                         | query    | `{ kind, count }[]` (sorted by kind)                        |
-| `hasReacted(ctx, authorRef, resourceRef, kind)`    | query    | `boolean`                                                   |
-| `myReactions(ctx, authorRef, resourceRef)`         | query    | `string[]` (kinds the subject placed)                       |
-| `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; bounded to 1000 rows read |
+| Method                                             | Kind     | Result                                                     |
+| -------------------------------------------------- | -------- | ---------------------------------------------------------- |
+| `react(ctx, authorRef, resourceRef, kind)`         | mutation | `{ reacted, action }` (`action`: `"added" \| "removed"`)   |
+| `unreact(ctx, authorRef, resourceRef, kind)`       | mutation | `boolean` (true if an edge was removed)                    |
+| `counts(ctx, resourceRef)`                         | query    | `{ kind, count }[]` (sorted by kind)                       |
+| `hasReacted(ctx, authorRef, resourceRef, kind)`    | query    | `boolean`                                                  |
+| `myReactions(ctx, authorRef, resourceRef)`         | query    | `string[]` (kinds the subject placed)                      |
+| `reactors(ctx, resourceRef, kind, paginationOpts)` | query    | `PaginationResult<ReactionView>`; 1 to 1000 items per page |
 
 Invalid numeric pagination options throw coded `ConvexError`
 `INVALID_PAGE_SIZE`; empty `authorRef`/`resourceRef` in `react`/`unreact` throw

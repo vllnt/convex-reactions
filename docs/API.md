@@ -85,9 +85,11 @@ has not reacted to the resource.
 Page the subjects who reacted to `resourceRef` with one `kind`, oldest first via
 the `by_resource_kind` index. Takes the standard Convex `paginationOpts`; its
 `numItems` must be an integer from 1 through 1000. `maximumRowsRead`, when
-provided, must be a positive finite integer and is capped at 1000 so explicit
-reactive cursor ranges remain bounded. Returns the standard paginated envelope
-(`page`, `isDone`, `continueCursor`). `ReactionView` is
+provided, must be a positive finite integer and is capped at 1000. With an
+`endCursor` (a reactive re-run of a loaded page), Convex returns the whole range
+between the two cursors and ignores `maximumRowsRead`; only Convex's transaction
+read limits bound it. Returns the standard paginated envelope (`page`, `isDone`,
+`continueCursor`). `ReactionView` is
 `{ authorRef, resourceRef, kind, createdAt }`.
 
 ## Tables
