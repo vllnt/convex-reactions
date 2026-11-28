@@ -73,10 +73,11 @@ try {
       type: "module",
     }),
   );
-  // pnpm 11 reads the build-script policy from the workspace file, pnpm 10 from package.json.
+  // The repo's release-age gate (pnpm 10 reads it only from this file), plus the
+  // build-script policy, which pnpm 11 reads from here and pnpm 10 from package.json.
   writeFileSync(
     join(temporary, "pnpm-workspace.yaml"),
-    "allowBuilds:\n  esbuild: false\n",
+    `${readFileSync(join(root, "pnpm-workspace.yaml"), "utf8")}allowBuilds:\n  esbuild: false\n`,
   );
   run("pnpm", ["add", join(temporary, tarball), ...CONSUMER_DEPENDENCIES]);
 
