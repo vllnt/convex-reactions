@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs";
 
-// Fail when the docs name a table or index the component schema does not define,
-// or when AGENTS.md or docs/API.md leave a defined table or index out. The schema
-// file is the single source; this keeps the docs from describing an old one.
+// Fail when AGENTS.md, docs/API.md, README.md or llms.txt name a backticked
+// `by_*` index the component schema does not define, or when AGENTS.md or
+// docs/API.md leave a defined table or index out. Unknown table names are not
+// detected. The schema file is the single source; this keeps the docs from
+// describing an old one.
 const schemaPath = "src/component/schema.ts";
 const mentionDocs = ["AGENTS.md", "docs/API.md"];
 const scanDocs = [...mentionDocs, "README.md", "llms.txt"];

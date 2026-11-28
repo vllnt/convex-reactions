@@ -31,6 +31,8 @@ jobs:
       - run: pnpm lint
       - name: Test the package contents check
         run: bash scripts/test-check-package-contents.sh
+      - name: Test the changelog check
+        run: bash scripts/test-check-changelog.sh
 
   typecheck:
     name: Typecheck
@@ -80,3 +82,4 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: pnpm test:package

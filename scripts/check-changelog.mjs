@@ -6,15 +6,23 @@ import { readFileSync } from "node:fs";
 // `## [X.Y.Z] - YYYY-MM-DD`.
 const { version } = JSON.parse(readFileSync("package.json", "utf8"));
 // CRLF is normalised, trailing whitespace on a heading is ignored, and `## `
-// lines inside fenced code blocks are not headings.
+// lines inside fenced code blocks are not headings. A fence closes only on a
+// line of fence characters (at least as many as the opener), so an inner
+// "```js" line does not close it.
 const headings = [];
 let fence = null;
 for (const raw of readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/)) {
   const line = raw.trimEnd();
   const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+  const closing = /^\s{0,3}(`{3,}|~{3,})$/.exec(line)?.[1];
   if (fence === null && marker !== undefined) {
     fence = marker;
-  } else if (fence !== null && line.trim().startsWith(fence)) {
+  } else if (
+    fence !== null &&
+    closing !== undefined &&
+    closing[0] === fence[0] &&
+    closing.length >= fence.length
+  ) {
     fence = null;
   } else if (fence === null && line.startsWith("## ")) {
     headings.push(line);
